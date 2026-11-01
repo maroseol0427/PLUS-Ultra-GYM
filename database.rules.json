@@ -1,0 +1,14 @@
+{
+  "rules": {
+    "acct": { "$k": { ".read": true, ".write": true,
+      ".validate": "$k.length === 64 && newData.hasChildren(['save','at'])" } },
+    "names": { "$k": { ".read": true, ".write": "!data.exists()" } },
+    "rank": { ".read": true, ".indexOn": ["score"],
+      "$k": { ".write": true,
+        ".validate": "newData.child('score').isNumber() && newData.child('score').val() >= 0 && newData.child('score').val() <= 1000 && newData.child('name').isString() && newData.child('name').val().length <= 10" } },
+    "locks": { "$k": { ".read": true, ".write": true } },
+    "lobby": { ".read": true, "$p": { ".write": true } },
+    "rooms": { "$ch": { ".read": "$ch === 'ch-gangnam' || $ch === 'ch-seocho'",
+      "$p": { ".write": "$ch === 'ch-gangnam' || $ch === 'ch-seocho'" } } }
+  }
+}

@@ -1,0 +1,23 @@
+const {chromium}=require('playwright');const fs=require('fs'),http=require('http'),path=require('path');
+const root=path.join(__dirname,'web');
+const srv=http.createServer((q,r)=>{let f=q.url.split('?')[0];if(f==='/')f='/index.html';
+ if(f==='/firebase-config.js'){r.end('window.FIREBASE_CONFIG={apiKey:"x"}');return}
+ try{r.end(fs.readFileSync(path.join(root,f)))}catch{r.statusCode=404;r.end()}}).listen(8765);
+(async()=>{const b=await chromium.launch({args:['--use-gl=swiftshader','--enable-unsafe-swiftshader']});const ctx=await b.newContext({viewport:{width:900,height:700}});
+await ctx.route('**/three.min.js',r=>r.fulfill({body:fs.readFileSync('node_modules/three/build/three.min.js','utf8'),contentType:'text/javascript'}));
+await ctx.route('https://fonts.googleapis.com/**',r=>r.fulfill({body:'',contentType:'text/css'}));
+await ctx.route('**/firebase-app-compat.js',r=>r.fulfill({body:fs.readFileSync('fakefb.js','utf8'),contentType:'text/javascript'}));
+await ctx.route('**/firebase-database-compat.js',r=>r.fulfill({body:'',contentType:'text/javascript'}));
+const open=async n=>{const p=await ctx.newPage();p.on('pageerror',e=>console.log(n,'ERR',e.message));await p.goto('http://localhost:8765/');await p.waitForTimeout(800);return p};
+const A=await open('A');console.log('A chans',await A.evaluate(()=>[...document.querySelectorAll('#chList button')].map(b=>b.textContent)));
+await A.fill('#lgId','ronnie');await A.fill('#lgPw','1234');await A.fill('#nick','로니');await A.click('#go');await A.waitForFunction(()=>started,null,{timeout:60000});
+console.log('A',await A.evaluate(()=>[guest,$('net').textContent,$('saveSt').textContent]));
+const B=await open('B');await B.click('#guest');await B.waitForFunction(()=>started);await B.waitForTimeout(2500);
+await A.bringToFront();await A.waitForTimeout(2000);console.log('peers A,B',await A.evaluate(()=>[peers.size,$('net').textContent]),await B.evaluate(()=>[peers.size,[...peers.values()].map(o=>o.label)]));
+await A.evaluate(()=>{S.coins=777;S.mu[0]=.5;saveSoon();sendChat('안녕하세요')});await A.waitForTimeout(4500);
+console.log('B hears',await B.evaluate(()=>[...document.querySelectorAll('#log p')].map(p=>p.textContent).slice(-2)));
+await A.waitForTimeout(3000);console.log('rank',await B.evaluate(()=>[rankRows,Object.keys(JSON.parse(localStorage.getItem('fakefb')).rank||{})]),await A.evaluate(()=>$('saveSt').textContent));
+await A.close();await B.waitForTimeout(800);console.log('dbg0',await B.evaluate(async()=>{const s=await firebase.database().ref('rank').get();const o=[];firebase.database().ref('rank').orderByChild('score').limitToLast(10).on('value',x=>{x.forEach(c=>{o.push(c.key)})});await new Promise(r=>setTimeout(r,50));return [JSON.stringify(s.val()).slice(0,200),o]}));console.log('dbg',await B.evaluate(async()=>{const d=await window.claude.use('db');return await new Promise(ok=>d.collection('rank').orderBy('score','desc').limit(10).onSnapshot(q=>ok(q.docs.map(x=>x.data())),e=>ok('err'+e)))}));console.log('B after A left',await B.evaluate(()=>peers.size));
+const C=await open('C');await C.fill('#lgId','ronnie');await C.fill('#lgPw','1234');await C.click('#go');await C.waitForFunction(()=>started,null,{timeout:60000});console.log('C reload',await C.evaluate(()=>[S.coins,S.name]));
+await C.reload();await C.waitForTimeout(800);await C.fill('#lgId','ronnie');await C.fill('#lgPw','9999');await C.click('#go');await C.waitForTimeout(3000);console.log('wrong pw',await C.evaluate(()=>$('lgMsg').textContent));
+await b.close();srv.close()})();
