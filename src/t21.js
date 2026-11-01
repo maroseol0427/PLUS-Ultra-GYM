@@ -7,7 +7,7 @@ const srv=http.createServer((q,r)=>{let f=q.url.split('?')[0];if(f==='/')f='/ind
 await ctx.route('**/three.min.js',r=>r.fulfill({body:fs.readFileSync('node_modules/three/build/three.min.js','utf8'),contentType:'text/javascript'}));
 await ctx.route('https://fonts.googleapis.com/**',r=>r.fulfill({body:'',contentType:'text/css'}));
 await ctx.route('**/firebase-app-compat.js',r=>r.fulfill({body:fs.readFileSync('fakefb.js','utf8'),contentType:'text/javascript'}));
-await ctx.route('**/firebase-database-compat.js',r=>r.fulfill({body:'',contentType:'text/javascript'}));
+await ctx.route('**/Reflector.js',r=>r.fulfill({body:fs.readFileSync('node_modules/three/examples/js/objects/Reflector.js','utf8'),contentType:'text/javascript'}));await ctx.route('**/firebase-auth-compat.js',r=>r.fulfill({body:'',contentType:'text/javascript'}));await ctx.route('**/firebase-database-compat.js',r=>r.fulfill({body:'',contentType:'text/javascript'}));
 const open=async n=>{const p=await ctx.newPage();p.on('pageerror',e=>console.log(n,'ERR',e.message));await p.goto('http://localhost:8765/');await p.waitForTimeout(800);return p};
 const A=await open('A');console.log('A chans',await A.evaluate(()=>[...document.querySelectorAll('#chList button')].map(b=>b.textContent)));
 await A.fill('#lgId','ronnie');await A.fill('#lgPw','1234');await A.fill('#nick','로니');await A.click('#go');await A.waitForFunction(()=>started,null,{timeout:60000});

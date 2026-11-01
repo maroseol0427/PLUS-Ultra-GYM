@@ -12,10 +12,12 @@ R('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.j
   '<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>\n'
   '<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>\n'
   '<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>\n'
+  '<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>\n'
   '<script src="firebase-config.js"></script>\n<script src="net.js"></script>')
 R("<title>PLUS Ultra GYM</title>",'<!doctype html>\n<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0d12">\n<title>PLUS Ultra GYM</title>')
 R("<canvas id=\"c\"></canvas>","</head><body>\n<canvas id=\"c\"></canvas>")
 R("if(!gRoom||sendT<.1)return;","if(!gRoom||sendT<.2)return;")
+R("if(t==='리타천재'){setAdmin(true);return openAdmin()}","")
 s=s.rstrip()+'\n</body></html>\n'
 open(D+'/web/index.html','w',encoding='utf8').write(s)
 shutil.copy(D+'/web_net.js',D+'/web/net.js')

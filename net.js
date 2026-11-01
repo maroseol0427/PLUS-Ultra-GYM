@@ -24,6 +24,7 @@
    async leave(){left=true;ref.off();D.ref('.info/connected').off('value',re);subs.clear();try{await mine.onDisconnect().cancel();await mine.remove()}catch{}},
    async join(name){return room('rooms/'+name)}};
   return R}
+ if(firebase.auth){const A=firebase.auth();window.gymAdminLogin=async()=>{const r=await A.signInWithPopup(new firebase.auth.GoogleAuthProvider());return r.user&&r.user.email};window.gymAdminWatch=cb=>A.onAuthStateChanged(u=>cb(u&&u.email))}
  let lobby=null;
  window.claude={use:async n=>n==='db'?db:n==='downloads'?dl:n==='room'?(lobby||(lobby=room('lobby'))):null};
 })();
