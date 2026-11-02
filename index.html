@@ -1,6 +1,8 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#0b0d12">
 <title>PLUS Ultra GYM</title>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-V64GG9PQ75"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}gtag("js",new Date());gtag("config","G-V64GG9PQ75");</script>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gothic+A1:wght@400;700&display=swap">
 <style>
@@ -1714,7 +1716,7 @@ function enter(s,msg){S=s;if(!S.name)S.name=clean($('nick').value).slice(0,10)||
  tabRow($('eyR'),EYES,()=>fcG(0),v=>fcS(0,v));tabRow($('brR'),BROWS,()=>fcG(1),v=>fcS(1,v));tabRow($('moR'),MOUTHS,()=>fcG(2),v=>fcS(2,v));tabRow($('bdR'),BEARDS,()=>fcG(3),v=>fcS(3,v),'bd');
  $('saveSt').textContent=guest?'게스트 · 이 기기에만 저장':'로그인됨 · 클라우드 저장';
  attendance();checkTitles();setInterval(checkTitles,2000);setTag(me.ch.tag,myTag(),'#ffc533');
- $('start').hidden=true;started=true;updateStats();renderList();saveSoon();connect();getDb();if(msg)addLog('알림',msg,'#5ee08a');addLog('팁','운동하면 근육이 커져요. 운동 후 단백질을 먹으면 더 빨리 크고, 운동 안 하고 먹으면 살쪄요','#7fd3ff')}
+ $('start').hidden=true;started=true;try{gtag('event','game_start')}catch(e){}updateStats();renderList();saveSoon();connect();getDb();if(msg)addLog('알림',msg,'#5ee08a');addLog('팁','운동하면 근육이 커져요. 운동 후 단백질을 먹으면 더 빨리 크고, 운동 안 하고 먹으면 살쪄요','#7fd3ff')}
 $('go').onclick=()=>{audio();login()};
 $('guest').onclick=()=>{audio();guest=true;const s=S.name?S:fromStart();for(const k of['g','hs','bot'])s.look[k]=pre[k];s.look.s0=pre.s;s.look.s=tanned(pre.s,s.tan||0);if($('nick').value.trim())s.name=clean($('nick').value).slice(0,10);enter(s)};
 for(const id of['lgId','lgPw','nick'])$(id).addEventListener('keydown',e=>{if(e.key==='Enter')$('go').click()});
