@@ -23,6 +23,7 @@ let gUser=null;const inApp=()=>/KAKAOTALK|Instagram|FBAN|FBAV|Line\/|NAVER|DaumA
 function gUI(){$('gTxt').textContent=gUser?`${gUser.email.replace(/^(.{2}).*(@.*)$/,'$1***$2')} 로 시작하기`:'Google로 시작하기';$('gOut').hidden=!gUser}
 if(window.gymAuth){gymAuth.watch(u=>{gUser=u;gUI();if(!u&&started)location.reload()});gUI();
  if(inApp())lgMsg('카카오톡·인스타 같은 앱 안 브라우저에서는 구글 로그인이 막혀요. 크롬이나 사파리로 열어주세요',true)}
+function listenKick(uid){const t0=Date.now();try{db.doc('kick/'+uid).onSnapshot(s=>{const v=s.exists?+s.data():0;if(v>t0){started=false;document.body.innerHTML='<div style="display:grid;place-items:center;height:100vh;background:#0b0d12;color:#fff;font:16px sans-serif;text-align:center;padding:20px">관리자가 내보냈어요.<br>잠시 후 다시 들어와 주세요.</div>';setTimeout(()=>location.reload(),5000)}})}catch{}}
 $('gOut').onclick=async()=>{try{await gymAuth.logout()}catch{}gUser=null;gUI()};
 $('bLogout').onclick=async()=>{try{saveSoon();await cloudFlush();await gymAuth.logout()}catch{}location.reload()};
 $('gGo').onclick=async()=>{audio();if(!window.gymAuth)return lgMsg('서버에 연결하지 못했어요. 새로고침 해 주세요',true);
@@ -30,8 +31,8 @@ $('gGo').onclick=async()=>{audio();if(!window.gymAuth)return lgMsg('서버에 �
  $('gGo').disabled=true;lgMsg('구글 계정 확인 중…');
  try{const u=gUser||await gymAuth.login();if(!u)throw 0;gUser=u;gUI();await getDb();if(!db)throw 0;acctKey=u.uid;nameKey=u.uid;guest=false;
   const a=await db.doc('acct/'+u.uid).get();
-  if(a.exists&&(a.data()||{}).save){enter(normalize(a.data().save),'다시 오셨네요!');return}
-  const ns=fromStart();await db.doc('acct/'+u.uid).set({save:ns,at:Date.now()});enter(ns,'환영해요! 새 캐릭터를 만들었어요')}
+  if(a.exists&&(a.data()||{}).save){enter(normalize(a.data().save),'다시 오셨네요!');listenKick(u.uid);return}
+  const ns=fromStart();await db.doc('acct/'+u.uid).set({save:ns,at:Date.now()});enter(ns,'환영해요! 새 캐릭터를 만들었어요');listenKick(u.uid)}
  catch(e){lgMsg(e&&e.code==='auth/popup-closed-by-user'?'로그인 창이 닫혔어요. 다시 눌러 주세요':e&&e.code==='auth/popup-blocked'?'팝업이 막혔어요. 팝업을 허용하고 다시 눌러 주세요':'로그인하지 못했어요. 잠시 후 다시 눌러 주세요',true)}
  finally{$('gGo').disabled=false}};
 getDb();initLobby();drawChanSign();""")

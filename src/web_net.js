@@ -11,6 +11,7 @@
   doc(path){const r=D.ref(path);return{
    async get(){const s=await r.get(),v=s.val();return{exists:v!==null,data:()=>v}},
    async set(o){await r.set(clean(o))},
+   onSnapshot(cb,err){const f=s=>cb({exists:s.val()!==null,data:()=>s.val()});r.on('value',f,e=>err&&err(e));return()=>r.off('value',f)},
    async acquire({holder,ttlMs}){const now=Date.now(),t=await D.ref('locks/'+path.replace(/\//g,'_')).transaction(c=>(!c||c.until<now||c.holder===holder)?{holder,until:now+ttlMs}:undefined);return{acquired:t.committed}}}},
   collection(name){let ord='score',lim=10;const q={orderBy(f){ord=f;return q},limit(n){lim=n;return q},
    onSnapshot(cb,err){const r=D.ref(name).orderByChild(ord).limitToLast(lim);r.on('value',s=>{const docs=[];s.forEach(c=>{docs.push({id:c.key,data:()=>c.val()})});docs.reverse();cb({docs})},e=>err&&err(e));return()=>r.off()}};return q}};

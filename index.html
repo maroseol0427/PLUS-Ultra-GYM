@@ -288,7 +288,10 @@ const SHIRTS=['#8a8f98','#e5484d','#3e8ef7','#30a46c','#f5a524','#8e4ec6','#1b1b
 const HAIRS=['#1b1b1f','#4a2f1e','#a8693a','#e3c76f','#c94a6a','#7a86ff'];
 const SKINS=['#f5d3b8','#e8b894','#c68e64','#9a6440','#6b4329'],PANTSC=['#23262d','#3e4a5c','#5a3a22','#e5484d','#1d4ed8','#f3efe6'];
 const HSTY=[['twoblock','투블럭'],['slick','올백'],['spiky','스파이키'],['curtain','가르마펌'],['wolf','울프컷'],['perm','뽀글펌'],['braid','땋은 머리'],['hime','히메컷'],['short','짧은 머리'],['buzz','삭발'],['mohawk','모히칸'],['afro','곱슬'],['bald','민머리'],['pony','포니테일'],['long','긴 생머리'],['bob','단발'],['bun','똥머리'],['twin','양갈래']];
-const TOPS=[['tee','티셔츠'],['tank','민소매'],['hoodie','후드티'],['jacket','트레이닝 자켓'],['comp','긴팔 컴프레션'],['crop','크롭탑'],['bra','스포츠 브라'],['none','벗기'],['suit','히어로 슈트']],BOTS=[['long','긴바지'],['shorts','반바지'],['jogger','조거팬츠'],['leggings','레깅스'],['skirt','테니스 스커트'],['trunks','포징 팬티']];
+const TOPS=[['tee','티셔츠'],['tank','민소매'],['hoodie','후드티'],['jacket','트레이닝 자켓'],['comp','긴팔 컴프레션'],['crop','크롭탑'],['bra','스포츠 브라'],['none','벗기'],['suit','히어로 슈트']],BOTS=[['flag','성조기 바지 (관리자)'],['long','긴바지'],['shorts','반바지'],['jogger','조거팬츠'],['leggings','레깅스'],['skirt','테니스 스커트'],['trunks','포징 팬티']];
+const BOTS_ED=()=>BOTS.filter(x=>x[0]!=='flag'||isAdmin);
+const FLAGT=(()=>{const mk=(f)=>{const c=document.createElement('canvas');c.width=64;c.height=128;f(c.getContext('2d'));const t=new THREE.CanvasTexture(c);t.magFilter=THREE.NearestFilter;return new THREE.MeshStandardMaterial({map:t,roughness:.8})};
+ return{stripe:mk(x=>{for(let i=0;i<13;i++){x.fillStyle=i%2?'#f3efe6':'#c4162a';x.fillRect(0,i*128/13,64,128/13+1)}}),star:mk(x=>{x.fillStyle='#1d2e7a';x.fillRect(0,0,64,128);x.fillStyle='#fff';for(let r=0;r<9;r++)for(let k=0;k<4;k++){const cx=8+k*16+(r%2)*8,cy=8+r*14;x.beginPath();for(let a=0;a<10;a++){const R2=a%2?2.2:5,an=a*PI/5-PI/2;x.lineTo(cx+Math.cos(an)*R2,cy+Math.sin(an)*R2)}x.fill()}})}})();
 const TOPS_ED=TOPS.filter(x=>x[0]!=='suit'),LONGT=['hoodie','jacket','comp','suit'],BARET=['none','crop','bra'];
 const TAN_MAX=6,tanCost=n=>40+n*30;
 function tanned(s0,n){const c=new THREE.Color(s0);c.lerp(new THREE.Color('#4a2a17'),clamp(n,0,TAN_MAX)/TAN_MAX*.55);return '#'+c.getHexString()}
@@ -632,11 +635,12 @@ function drawSide(x,side,look,mu,fem){
  const t=side==='f'?look.ft:look.bt;if(t){let sz=side==='f'?20:26;do{x.font=`bold ${sz}px "Gothic A1",sans-serif`;sz--}while(x.measureText(t).width>118&&sz>9);
   x.textAlign='center';x.textBaseline='middle';const y=side==='f'?90:26;x.lineWidth=4;x.strokeStyle='rgba(0,0,0,.65)';x.strokeText(t,64,y);x.fillStyle='#fff';x.fillText(t,64,y)}
 }
-function drawShirt(ch){const L=ch.look,Q=ch.mats,top=L.top||'tee',bot=L.bot||(ch.fem?'long':'shorts'),sk=L.s||SKINS[1],pc=L.p||PANTSC[0],lg=['long','jogger','leggings'].includes(bot),lt=LONGT.includes(top);
+function drawShirt(ch){const L=ch.look,Q=ch.mats,top=L.top||'tee',bot=L.bot||(ch.fem?'long':'shorts'),sk=L.s||SKINS[1],pc=L.p||PANTSC[0],lg=['long','jogger','leggings','flag'].includes(bot),lt=LONGT.includes(top);
  Q.skinM.color.set(sk);Q.shirtM.color.set((top==='none'&&!ch.fem)||top==='bra'?sk:L.c);Q.lowM.color.set(BARET.includes(top)?sk:L.c);Q.capM.color.set(top==='tee'||lt?L.c:sk);
  Q.uaM.color.set(lt?L.c:sk);Q.faM.color.set(lt?L.c:sk);Q.cuffM.color.set(new THREE.Color(pc).multiplyScalar(.6));
  Q.pantsM.color.set(pc);Q.thM.color.set(bot==='trunks'?sk:pc);Q.tsM.color.set(lg?pc:sk);Q.cfM.color.set(lg?pc:sk);
- const M=ch.m;M.hood.visible=top==='hoodie';M.skirt.visible=bot==='skirt';for(const c of M.cuffs||[])c.visible=bot==='jogger';
+ const M=ch.m;if(!M.legM0)M.legM0={};for(const s of[-1,1])for(const p of['th','ts','cf']){const k=p+s;M.legM0[k]=M.legM0[k]||M[k].material;M[k].material=bot==='flag'?(s<0?FLAGT.stripe:FLAGT.star):M.legM0[k]}if(bot==='flag')Q.pantsM.color.set('#1d2e7a');
+ M.hood.visible=top==='hoodie';M.skirt.visible=bot==='skirt';for(const c of M.cuffs||[])c.visible=bot==='jogger';
  drawSide(ch.fT.image.getContext('2d'),'f',L,ch.mu,ch.fem);drawSide(ch.bT.image.getContext('2d'),'b',L,ch.mu,ch.fem);ch.fT.needsUpdate=ch.bT.needsUpdate=true;
  const x=ch.aT.image.getContext('2d'),v=ch.mu[5],bare=BARET.includes(top);x.fillStyle=bare?sk:L.c;x.fillRect(0,0,64,56);
  if(v>.05||bare){x.strokeStyle=bare?`rgba(70,35,15,${.15+.45*v})`:`rgba(0,0,0,${.06+.4*v})`;x.lineWidth=2;x.beginPath();x.moveTo(32,4);x.lineTo(32,52);for(const y of[16,30,44]){x.moveTo(18,y);x.lineTo(46,y)}x.stroke()}ch.aT.needsUpdate=true}
@@ -702,7 +706,7 @@ const pony=hair(hd,look.hs,hc);
   const lg=j['lg'+s]=G(hips,s*.09,0,0);m['th'+s]=B(lg,.14,.26,.15,thM,0,-.12,0);m['ts'+s]=B(lg,.12,.2,.13,tsM,0,-.35,0);
   const kn=j['kn'+s]=G(lg,0,-.45,0);m['cf'+s]=B(kn,.11,.42,.12,cfM,0,-.21,0);(m.cuffs||(m.cuffs=[])).push(B(m['cf'+s],.118,.06,.128,cuffM,0,-.18,0));B(kn,.126,.024,.245,'#f4f4f4',0,-.468,.042);B(kn,.12,.05,.2,fem?'#e9e4ef':'#23262d',0,-.431,.03);B(kn,.122,.014,.1,'#ffbf2e',0,-.432,-.005);B(kn,.06,.01,.07,'#f4f4f4',0,-.404,.07);
  }
- const props={hbar:barbell(j['ha-1'],1.7),sbar:barbell(sp,1.8),pbar:barbell(hips,1.8),dbs:[dumb(j['ha-1'],0,-.06,0),dumb(j.ha1,0,-.06,0)],kbell:kbell(j['ha-1'],.1,-.1,0),food:B(j['ha-1'],.07,.16,.07,'#7fd3ff',0,-.1,.04)};
+ const props={hbar:barbell(j['ha-1'],1.7),sbar:barbell(sp,1.8),pbar:barbell(hips,1.8),dbs:[dumb(j['ha-1'],0,-.06,0),dumb(j.ha1,0,-.06,0)],kbell:kbell(j['ha-1'],.1,-.1,0),food:B(j['ha-1'],.07,.16,.07,'#7fd3ff',0,-.1,.04),phone:(()=>{const g=G(j.ha1,0,-.075,.03);B(g,.05,.095,.012,'#16181d',0,0,0);B(g,.043,.082,.002,new THREE.MeshBasicMaterial({color:'#8fd8ff'}),0,0,-.007);g.rotation.x=-.25;return g})()};
  props.hbar.position.y=-.08;props.sbar.position.y=.55;props.pbar.position.z=.15;
  const t=tag('','#fff');t.position.y=2.1;root.add(t);
  const ch={root,j,m,props,tag:t,mats,fT,bT,aT,pony,fem,sw:fem?.15:.17,look,mu:padMu(mu),fat:fat||18,dm:null,t:0,c:0,jy:0,jv:0,pos:new V(),ry:0,bub:null,bubT:0};
@@ -719,7 +723,7 @@ function applyMuscle(ch,force){for(let i=0;i<NM;i++)if(!Number.isFinite(ch.mu[i]
  ch.props.sbar.position.z=-(.095*m.tu.scale.z+.04);if(m.bust){m.bust.position.z=.09*m.tu.scale.z+.012;m.bust.scale.setScalar(1+.25*cs)}
  if(force||!ch.dm||ch.mu.some((v,i)=>Math.abs(v-ch.dm[i])>.03)){ch.dm=ch.mu.slice();drawShirt(ch)}
 }
-const PROP={bench:'hbar',incline:'hbar',dead:'hbar',squat:'sbar',smith:'sbar',hip:'pbar',curl:'dbs',spress:'dbs',kb:'kbell',eat:'food'};
+const PROP={phone:'phone',bench:'hbar',incline:'hbar',dead:'hbar',squat:'sbar',smith:'sbar',hip:'pbar',curl:'dbs',spress:'dbs',kb:'kbell',eat:'food'};
 function setLoad(ch,act,kg){const L=ACT[act]&&ACT[act].load,key=act+kg;if(!L||ch.lk2===key)return;ch.lk2=key;
  if(L==='bar')setPlates(ch.props[PROP[act]],clamp(Math.round((kg-20)/20),0,BAR_MAX));
  if(L==='db'){const s=act==='kb'?.6+kg/30:.55+kg/22;[].concat(ch.props[PROP[act]]).forEach(d=>d.scale.setScalar(s))}}
@@ -806,6 +810,8 @@ function pose(ch,act,t,c){
   j['sh'+od].rotation.set(g*-1.3,0,od*g*.22);j['el'+od].rotation.x=g*-2.05;j.head.rotation.x=g*.12;
   j.spine.rotation.y=sd*(-.4*w*K+.55*st*K);j.spine.rotation.x=g*.06+.1*st*K;j.hips.rotation.y=sd*(-.15*w+.2*st)*K;
   j['lg'+sd].rotation.x=-.35*st*K+g*-.1;j['kn'+sd].rotation.x=g*.25;j['lg'+od].rotation.x=.3*st*K+g*.15;j['kn'+od].rotation.x=g*.35;j.hips.position.y=.92-g*.05-.04*st*K}
+ else if(act==='phone'){const sc=Math.sin(t*2.3)*.04;j.sh1.rotation.set(-.75,0,-.28);j.el1.rotation.set(-1.25+sc,0,0);j.ha1.rotation.set(-.5,0,0);
+  j['sh-1'].rotation.set(-.7,0,.32);j['el-1'].rotation.x=-1.3;j.head.rotation.x=PHONE_HEAD+Math.sin(t*.4)*.04;j.head.rotation.y=-.12;j.spine.rotation.x=.06;j.lg1.rotation.z=.04;j['lg-1'].rotation.z=-.06}
  else if(act==='down'){j.hips.position.set(0,.13,0);j.hips.rotation.x=-PI/2;j.sh1.rotation.set(0,0,1.3);j['sh-1'].rotation.set(0,0,-1.3);j.el1.rotation.x=j['el-1'].rotation.x=-.4;j.lg1.rotation.z=.25;j['lg-1'].rotation.z=-.25;j.kn1.rotation.x=.3;j.head.rotation.y=Math.sin(t*.7)*.25}
  else if(act==='fly'){j.hips.rotation.x=-(ch.spin||0);j.sh1.rotation.set(-2.6,0,.6);j['sh-1'].rotation.set(-2.6,0,-.6);j.lg1.rotation.set(.6,0,.3);j['lg-1'].rotation.set(-.4,0,-.3);j.kn1.rotation.x=j['kn-1'].rotation.x=.8}
  else if(act==='dizzy'){j.spine.rotation.z=Math.sin(t*3)*.16;j.spine.rotation.x=.1;j.head.rotation.z=Math.sin(t*4.2)*.32;j.sh1.rotation.z=.5+Math.sin(t*3)*.2;j['sh-1'].rotation.z=-.5+Math.sin(t*3)*.2;j.kn1.rotation.x=j['kn-1'].rotation.x=.25;j.hips.position.y=.88}
@@ -1382,6 +1388,7 @@ function npcUpdate(o,dt){const ch=o.ch,P=PERS[o.pers];o.mood=Math.min(85,o.mood+
   if(me.eq&&me.eq.A.in!=='tap2'&&!me.pin&&Math.random()<P.ask*.4){lastApproach=now;o.mode='askme';o.chat=false;o.asked=false;o.wantEq=me.eq;o.walkT=0;
    const f=front(me.eq,1.3),s=Math.random()<.5?1:-1;o.tx=clamp(f.x+Math.cos(me.eq.ry)*.8*s,-RX,RX);o.tz=clamp(f.z-Math.sin(me.eq.ry)*.8*s,-RZ,RZ);return}
   if(!me.eq&&o.pers==='chatty'&&Math.random()<.2){lastApproach=now;o.mode='askme';o.chat=true;o.walkT=0;const a=rnd(0,2*PI);o.tx=me.ch.pos.x+Math.sin(a)*1.2;o.tz=me.ch.pos.z+Math.cos(a)*1.2;return}}
+ if(!o.staff&&Math.random()<(o.phoner?.65:.18)){o.emote={type:'phone',t:rnd(6,16)};o.wait=o.emote.t;o.tx=ch.pos.x;o.tz=ch.pos.z;if(Math.random()<.25)setTimeout(()=>speak(o,pick(['ㅋㅋㅋ 이거 웃기네','아 단톡 왜 이렇게 시끄러워','오늘 하체 하기 싫다… 쇼츠나 볼까','인스타에 오운완 올려야지','어? 벌써 시간이 이렇게 됐네'])),800);return}
  if(Math.random()<.08){o.tx=10+rnd(-1,1);o.tz=5.8;o.wait=3;return}
  const free=EQ.filter(e=>!occupant(e.id)&&!npcs.some(n=>n.target===e||n.wantEq===e));
  if(free.length&&Math.random()<.7)startGoto(o,pick(free));else{o.tx=rnd(-20,20);o.tz=rnd(-12,12);o.wait=rnd(1,4)}}
@@ -1484,7 +1491,8 @@ function sendChat(t,target){t=clean(t);if(!t||!me)return;msgId++;lastMsg=t;say(m
 $('cmdF').onsubmit=e=>{e.preventDefault();const t=$('cmdIn').value.trim();$('cmdIn').value='';$('cmdIn').blur();if(!t||!started)return;sendChat(t)};
 // 관리자: 웹 버전은 구글 로그인 이메일 해시로, 아티팩트 버전은 채팅 코드로 켠다 (화면 쪽 판정 — 남에게 영향 주는 기능은 서버 규칙으로 따로 막을 것)
 let isAdmin=false;const ADMIN_SHA='903993fec2ed6ce5774356d08a2db4036db1ab6e160e22567282292a92d3ff41';
-function setAdmin(v){if(isAdmin===v)return;isAdmin=v;document.body.classList.toggle('admin',v);if(me){rebuildMe();addLog('관리자',v?'관리자 모드가 켜졌어요':'관리자 모드가 꺼졌어요','#ff7eb6')}}
+function buildBotTabs(){tabRow($('botR'),BOTS_ED(),()=>S.look.bot,v=>{S.look.bot=v;edFocus='bot';edited()},'bot')}
+function setAdmin(v){if(isAdmin===v)return;isAdmin=v;document.body.classList.toggle('admin',v);if(me)buildBotTabs();if(!v&&S.look.bot==='flag')S.look.bot=S.look.g==='f'?'long':'shorts';if(me){rebuildMe();addLog('관리자',v?'관리자 모드가 켜졌어요':'관리자 모드가 꺼졌어요','#ff7eb6')}}
 if(window.gymAdminWatch)window.gymAdminWatch(async em=>setAdmin(!!em&&(await sha(em.trim().toLowerCase()))===ADMIN_SHA));
 $('bAdmin').onclick=async()=>{if(isAdmin)return openAdmin();if(window.gymAdminLogin){try{const em=await window.gymAdminLogin();if(!em||(await sha(em.trim().toLowerCase()))!==ADMIN_SHA)addLog('관리자','관리자 계정이 아니에요','#ff8a3d')}catch(e){addLog('관리자','구글 로그인을 하지 못했어요','#ff8a3d')}}else addLog('관리자','채팅창에 관리자 코드를 입력하세요','#9aa1ab')};
 function openAdmin(){if(!isAdmin)return;closeSheets();const el=$('admL');el.textContent='';
@@ -1495,6 +1503,19 @@ function openAdmin(){if(!isAdmin)return;closeSheets();const el=$('admL');el.text
  row('근력 배율',()=>S.strMul||1,v=>S.strMul=v,1,10,.5);row('코인',()=>S.coins,v=>S.coins=v,0,999999,100);
  row('체력',()=>Math.round(S.sta),v=>S.sta=v,0,500,10);row('단백질',()=>Math.round(S.prot),v=>S.prot=v,0,100,1);
  row('체지방률',()=>S.fat,v=>{S.fat=v;me.ch.fat=v},6,40,.5);row('레벨',()=>S.lvl,v=>{S.lvl=v;S.xp=0;setTag(me.ch.tag,myTag(),'#ffc533')},1,99,1);
+ {const w=document.createElement('div');w.className='row';w.style.gridColumn='1/-1';const inp=document.createElement('input');inp.type='text';inp.maxLength=10;inp.value=S.name;inp.style.flex='1';inp.setAttribute('aria-label','내 이름');
+  const b=document.createElement('button');b.className='go';b.textContent='이름 바꾸기';b.onclick=()=>{const n=clean(inp.value).slice(0,10);if(!n)return;S.name=me.name=n;S.look.bt=n;drawShirt(me.ch);setTag(me.ch.tag,myTag(),'#ffc533');renderList();saveSoon();if(window.gymAuth)cloudFlush();addLog('관리자',`이름을 ${n}(으)로 바꿨어요`,'#ff7eb6')};
+  const lb=document.createElement('span');lb.className='k';lb.textContent='관리자 이름 (자유롭게 변경)';el.append(lb);w.append(inp,b);el.append(w)}
+ if(window.gymAuth){const h=document.createElement('h4');h.textContent='입장한 사람 관리';el.append(h);const box=document.createElement('div');box.style.display='grid';box.style.gap='6px';el.append(box);
+  const act=async(fn,b,ok)=>{if(b.dataset.c!=='1'){b.dataset.c='1';const t0=b.textContent;b.textContent='한 번 더 누르면 실행';setTimeout(()=>{b.dataset.c='';b.textContent=t0},3000);return}b.disabled=true;try{await fn();addLog('관리자',ok,'#ff7eb6')}catch(e){addLog('관리자','실패했어요: 서버 규칙을 확인해 주세요','#ff5a5a')}drawUsers()};
+  const btn=(t,fn,ok)=>{const b=document.createElement('button');b.className='sm';b.textContent=t;b.onclick=()=>act(fn,b,ok);return b};
+  const drawUsers=()=>{box.textContent='';const L=lobbyPeers.filter(p=>!p.sameTab);
+   const top=document.createElement('div');top.className='row';top.append(btn('접속 목록 전체 초기화',async()=>{await db.doc('lobby').set(null);await db.doc('rooms').set(null)},'접속 목록을 초기화했어요 (접속 중인 사람은 자동으로 다시 들어와요)'),btn('목록 새로고침',async()=>{},''));box.append(top);
+   if(!L.length){const p=document.createElement('span');p.className='k';p.textContent='지금 들어와 있는 다른 사람이 없어요';box.append(p)}
+   for(const p of L){const v=p.presence||{},r=document.createElement('div');r.className='row';r.style.alignItems='center';const t=document.createElement('span');t.style.flex='1';t.textContent=`${clean(v.n)||'(이름 없음)'} · ${chName(v.ch)||'?'}`;
+    r.append(t,btn('내보내기',async()=>{await db.doc('kick/'+p.peer).set(Date.now());await db.doc('lobby/'+p.peer).set(null);for(const c of CHANNELS)await db.doc('rooms/ch-'+c[0]+'/'+p.peer).set(null)},`${clean(v.n)} 님을 내보냈어요`),
+     btn('계정 초기화',async()=>{await db.doc('acct/'+p.peer).set(null);await db.doc('rank/'+p.peer).set(null);await db.doc('kick/'+p.peer).set(Date.now());await db.doc('lobby/'+p.peer).set(null);for(const c of CHANNELS)await db.doc('rooms/ch-'+c[0]+'/'+p.peer).set(null)},`${clean(v.n)} 님 계정을 초기화했어요`));box.append(r)}};
+  drawUsers()}
  $('adminS').hidden=false;addLog('관리자','관리자 모드를 열었어요','#ff7eb6')}
 $('adminX').onclick=closeSheets;
 $('chatF').onsubmit=e=>{e.preventDefault();sendChat($('chatIn').value);$('chatIn').value='';closeSheets()};
@@ -1545,7 +1566,7 @@ $('edX').onclick=closeSheets;
 
 // ---------- 실시간 ----------
 function setNet(t,on){$('net').className=on?'on':'';$('net').querySelector('span').textContent=t}
-const EMO=['wave','flex','high5','clap','eat','punch','bigpunch','hurt',...POSES.map(p=>p.id)];
+const EMO=['phone','wave','flex','high5','clap','eat','punch','bigpunch','hurt',...POSES.map(p=>p.id)];
 function readPeer(p){const v=p.presence||{},hexc=/^#[0-9a-f]{6}$/i,px=/^[0-7]{224}$/;
  return{n:clean(v.n).slice(0,10),c:hexc.test(v.c)?v.c:'#888888',g:v.g==='f'?'f':'m',h:hexc.test(v.h)?v.h:HAIRS[0],s:hexc.test(v.s)?v.s:SKINS[1],p:hexc.test(v.pc)?v.pc:PANTSC[0],
   hs:HSTY.some(x=>x[0]===v.hs)?v.hs:(v.g==='f'?'pony':'short'),top:TOPS.some(x=>x[0]===v.top)?v.top:'tee',bot:BOTS.some(x=>x[0]===v.bot)?v.bot:(v.g==='f'?'long':'shorts'),acc:['band','cap','glass','cape'].includes(v.acc)?v.acc:'',belt:!!v.belt,fc:/^[0-4]{4}$/.test(v.fc)?v.fc:'0000',
@@ -1566,7 +1587,7 @@ function syncPeers(list){const seen=new Set();
   Object.assign(o,{n:v.n,c:v.c,x:v.x,z:v.z,r:v.r,a:v.a,k:v.k,p:v.p,w:v.w,st:v.st,lv:v.lv,mut:v.mu});
   if(v.mi!==o.mi){o.mi=v.mi;if(v.m){say(o.ch,v.m);addLog(v.n,v.m,v.c);SFX.pop(.5)}}
   if(v.hit&&v.hit.i!==o.hitI){const first=o.hitI===undefined;o.hitI=v.hit.i;if(!first&&v.hit.to===myPeer)gotHit(o,v.hit.k)}
-  if(v.ei!==o.ei){o.ei=v.ei;if(v.e){o.emote={type:v.e,t:POSEID[v.e]?3.5:v.e==='punch'?.5:v.e==='bigpunch'?.9:2.2};o.ch.pt=clock.elapsedTime;o.ch.ps=v.ei%2?1:-1}}
+  if(v.ei!==o.ei){o.ei=v.ei;if(!v.e)o.emote=null;if(v.e){o.emote={type:v.e,t:v.e==='phone'?1e9:POSEID[v.e]?3.5:v.e==='punch'?.5:v.e==='bigpunch'?.9:2.2};o.ch.pt=clock.elapsedTime;o.ch.ps=v.ei%2?1:-1}}
   if(v.ji!==o.ji){o.ji=v.ji;if(o.ch.jy<=0)o.ch.jv=4.4}
   const lbl=(v.ti?`[${v.ti}] `:'')+`Lv.${v.lv} ${v.n}`+(v.st==='pin'?' · 깔림!':v.st==='hurt'?' · 부상':e?(e.A.in==='tap2'?` · ${v.k}${e.A.unit}`:` · ${v.k%SET}/${SET}`):'');if(lbl!==o.label){o.label=lbl;setTag(o.ch.tag,lbl,v.st==='ok'?'#fff':'#ff8a8a')}}
  for(const[id,o]of peers)if(!seen.has(id)){scene.remove(o.ch.root);peers.delete(id)}
@@ -1583,7 +1604,7 @@ function renderList(){if(!me)return;const ul=$('list');ul.textContent='';
 // ---------- 지점(채널): 로비에서 인원 집계, 지점마다 별도 방(join) ----------
 const CHANNELS=[['gangnam','PLUS Ultra - 강남점'],['seocho','PLUS Ultra - 서초점']],CAP=50;
 const chName=id=>(CHANNELS.find(c=>c[0]===id)||CHANNELS[0])[1];
-let lobby=null,gRoom=null,joining=false,chan='gangnam',chCounts={};
+let lobbyPeers=[],lobby=null,gRoom=null,joining=false,chan='gangnam',chCounts={};
 try{const c=localStorage.getItem('gymCh');if(CHANNELS.some(x=>x[0]===c))chan=c}catch{}
 const chCount=id=>chCounts[id]||0;
 function renderCh(){for(const id of['chList','chList2']){const el=$(id);el.textContent='';
@@ -1593,12 +1614,12 @@ function renderCh(){for(const id of['chList','chList2']){const el=$(id);el.textC
 function netLine(){const n=chName(chan);if(!lobby)return setNet('혼자 모드 · '+n);setNet(`${n} · ${chCount(chan)}/${CAP}명`,!!gRoom&&gRoom.connected())}
 async function initLobby(){try{lobby=await window.claude?.use?.('room')}catch{lobby=null}
  if(!lobby){renderCh();netLine();return}
- lobby.onPeers(c=>{chCounts={};for(const p of c.peers){const v=p.presence&&p.presence.ch;if(typeof v==='string'&&CHANNELS.some(x=>x[0]===v))chCounts[v]=(chCounts[v]||0)+1}renderCh();netLine()},()=>{lobby=null;gRoom=null;renderCh();netLine()});
+ lobby.onPeers(c=>{lobbyPeers=c.peers;chCounts={};for(const p of c.peers){const v=p.presence&&p.presence.ch;if(typeof v==='string'&&CHANNELS.some(x=>x[0]===v))chCounts[v]=(chCounts[v]||0)+1}renderCh();netLine()},()=>{lobby=null;gRoom=null;renderCh();netLine()});
  lobby.onConnection(()=>netLine(),()=>{});renderCh();netLine()}
 async function joinChannel(id){if(joining)return;joining=true;
  if(gRoom){try{await gRoom.leave()}catch{}gRoom=null}for(const o of peers.values())scene.remove(o.ch.root);peers.clear();for(const k in sent)delete sent[k];
  chan=id;try{localStorage.setItem('gymCh',id)}catch{}drawChanSign();renderCh();
- if(lobby){lobby.presence({ch:id}).catch(()=>{});
+ if(lobby){lobby.presence({ch:id,n:me?me.name:''}).catch(()=>{});
   try{gRoom=await lobby.join('ch-'+id);gRoom.onPeers(c=>syncPeers(c.peers),()=>{gRoom=null;netLine()});gRoom.onConnection(()=>netLine(),()=>{})}
   catch{gRoom=null;addLog('지점','지점 방에 들어가지 못했어요. 혼자 모드로 진행해요','#ff8a3d')}}
  joining=false;netLine();renderList();if(me)addLog('지점',chName(id)+'에 들어왔어요','#5ee08a')}
@@ -1630,6 +1651,7 @@ function collide(){const L=[];
  for(const q of[me.ch.pos,...npcs.map(o=>o.ch.pos)]){q.x=clamp(q.x,-RX,RX);q.z=clamp(q.z,-RZ,RZ)}}
 
 for(const[k,c,r,mt]of[['#b23a3f','#c4162a',.42,.05],['#444a52','#2a2e36',.42,.3],['#555b64','#9aa1aa',.3,.4],['#2b2f36','#1c1f26',.5,.2],['#1f2126','#16181d',.6,.1],['#3b4049','#252932',.6,.15]]){const m=mats[k+'0'];if(m){m.color.set(c);m.roughness=r;m.metalness=mt}}
+{const pc=npcs.filter(o=>!o.staff&&!o.stay&&!o.swimmer);for(let i=0;i<2&&pc.length;i++)pc.splice(Math.random()*pc.length|0,1)[0].phoner=true}
 // ---------- 시작 ----------
 const pre=Object.assign({},S.look);pre.s=S.look.s0||pre.s;let demo=makeChar(pre,S.mu,S.fat);demo.pos.set(0,0,3);
 function rebuildDemo(){const ry=demo.ry;scene.remove(demo.root);demo=makeChar(pre,S.mu,S.fat);demo.pos.set(0,0,3);demo.ry=ry}
@@ -1651,7 +1673,7 @@ function enter(s,msg){S=s;if(!S.name)S.name=clean($('nick').value).slice(0,10)||
  me.ch=makeMe();me.ch.pos.set(rnd(-1.5,1.5),0,4.6);setTag(me.ch.tag,myTag(),'#ffc533');
  for(const[k,v]of[['sc',S.look.c],['hc',S.look.h],['pc',S.look.p],['hs',S.look.hs],['top',S.look.top],['bot',S.look.bot]])if(!S.owned.includes(k+':'+v))S.owned.push(k+':'+v);
  colorRow($('shirtC'),SHIRTS,c=>{S.look.c=c;edFocus='top';edited()},()=>S.look.c,'셔츠 색','sc');
- tabRow($('topR'),TOPS_ED,()=>S.look.top,v=>{S.look.top=v;edFocus='top';edited()},'top');tabRow($('botR'),BOTS,()=>S.look.bot,v=>{S.look.bot=v;edFocus='bot';edited()},'bot');
+ tabRow($('topR'),TOPS_ED,()=>S.look.top,v=>{S.look.top=v;edFocus='top';edited()},'top');buildBotTabs();
  colorRow($('pantsC'),PANTSC,c=>{S.look.p=c;edFocus='bot';edited()},()=>S.look.p,'하의 색','pc');
  tabRow($('hsR'),HSTY,()=>S.look.hs,v=>{S.look.hs=v;edFocus='head';rebuildMe();drawGrid()},'hs');colorRow($('hairC'),HAIRS,c=>{S.look.h=c;edFocus='head';rebuildMe();drawGrid()},()=>S.look.h,'머리 색','hc');
  const fcG=i=>(S.look.fc||'0000')[i],fcS=(i,v)=>{edFocus='head';const a=(S.look.fc||'0000').split('');a[i]=v;S.look.fc=a.join('');rebuildMe();drawGrid()};
@@ -1667,6 +1689,7 @@ let gUser=null;const inApp=()=>/KAKAOTALK|Instagram|FBAN|FBAV|Line\/|NAVER|DaumA
 function gUI(){$('gTxt').textContent=gUser?`${gUser.email.replace(/^(.{2}).*(@.*)$/,'$1***$2')} 로 시작하기`:'Google로 시작하기';$('gOut').hidden=!gUser}
 if(window.gymAuth){gymAuth.watch(u=>{gUser=u;gUI();if(!u&&started)location.reload()});gUI();
  if(inApp())lgMsg('카카오톡·인스타 같은 앱 안 브라우저에서는 구글 로그인이 막혀요. 크롬이나 사파리로 열어주세요',true)}
+function listenKick(uid){const t0=Date.now();try{db.doc('kick/'+uid).onSnapshot(s=>{const v=s.exists?+s.data():0;if(v>t0){started=false;document.body.innerHTML='<div style="display:grid;place-items:center;height:100vh;background:#0b0d12;color:#fff;font:16px sans-serif;text-align:center;padding:20px">관리자가 내보냈어요.<br>잠시 후 다시 들어와 주세요.</div>';setTimeout(()=>location.reload(),5000)}})}catch{}}
 $('gOut').onclick=async()=>{try{await gymAuth.logout()}catch{}gUser=null;gUI()};
 $('bLogout').onclick=async()=>{try{saveSoon();await cloudFlush();await gymAuth.logout()}catch{}location.reload()};
 $('gGo').onclick=async()=>{audio();if(!window.gymAuth)return lgMsg('서버에 연결하지 못했어요. 새로고침 해 주세요',true);
@@ -1674,8 +1697,8 @@ $('gGo').onclick=async()=>{audio();if(!window.gymAuth)return lgMsg('서버에 �
  $('gGo').disabled=true;lgMsg('구글 계정 확인 중…');
  try{const u=gUser||await gymAuth.login();if(!u)throw 0;gUser=u;gUI();await getDb();if(!db)throw 0;acctKey=u.uid;nameKey=u.uid;guest=false;
   const a=await db.doc('acct/'+u.uid).get();
-  if(a.exists&&(a.data()||{}).save){enter(normalize(a.data().save),'다시 오셨네요!');return}
-  const ns=fromStart();await db.doc('acct/'+u.uid).set({save:ns,at:Date.now()});enter(ns,'환영해요! 새 캐릭터를 만들었어요')}
+  if(a.exists&&(a.data()||{}).save){enter(normalize(a.data().save),'다시 오셨네요!');listenKick(u.uid);return}
+  const ns=fromStart();await db.doc('acct/'+u.uid).set({save:ns,at:Date.now()});enter(ns,'환영해요! 새 캐릭터를 만들었어요');listenKick(u.uid)}
  catch(e){lgMsg(e&&e.code==='auth/popup-closed-by-user'?'로그인 창이 닫혔어요. 다시 눌러 주세요':e&&e.code==='auth/popup-blocked'?'팝업이 막혔어요. 팝업을 허용하고 다시 눌러 주세요':'로그인하지 못했어요. 잠시 후 다시 눌러 주세요',true)}
  finally{$('gGo').disabled=false}};
 getDb();initLobby();drawChanSign();document.fonts&&document.fonts.ready.then(drawChanSign);
@@ -1685,12 +1708,15 @@ const clock=new THREE.Clock(),eqTag=tag('','#ffc533');scene.add(eqTag);let eqTag
 function animate(a,act){const ch=a.ch,e=a.eq;
  if(e){ch.root.position.set(e.x,e.A.y,e.z);ch.root.rotation.y=e.ry;let k=e.act;if(k==='run'&&a.spd<.25)k='idle';if(k==='run'&&a.walker)k='walk';pose(ch,k,ch.t,ch.c);e.user=ch}
  else{if(ch.jv||ch.jy>0){ch.jy+=ch.jv*clock.dtv;ch.jv-=12*clock.dtv;if(ch.jy<=0){ch.jy=0;ch.jv=0;if(a===me)SFX.land()}}
-  const pool=inPool(ch.pos.x,ch.pos.z)&&!(a===me&&mini);ch.root.position.set(ch.pos.x,(pool?-.8:stageY(ch.pos.x,ch.pos.z))+ch.jy+(ch.cy||0),ch.pos.z);ch.root.rotation.y=ch.ry;
+  const pool=inPool(ch.pos.x,ch.pos.z)&&!(a===me&&mini);if(act==='phone'&&ch.jy>0)act='idle';ch.root.position.set(ch.pos.x,(pool?-.8:stageY(ch.pos.x,ch.pos.z))+ch.jy+(ch.cy||0),ch.pos.z);ch.root.rotation.y=ch.ry;
   pose(ch,pool?'swim':ch.jy>0?(ch.fly?'fly':'jump'):act,ch.t,act==='spot'||act==='armw'||act==='dance'?ch.c:0)}
  ch.root.updateMatrixWorld(true);if(ch.bub&&ch.bub.visible&&(ch.bubT-=clock.dtv)<0)ch.bub.visible=false}
 function meAct(){return me.ko&&!me.eq?(me.ko==='dizzy'&&me.moving?'walk':me.ko):me.eq?null:mini?mini.act:arm?'armw':me.moving?'walk':me.emote?me.emote.type:me.sit?'sit':me.hurt>0?'hurt':'idle'}
 let statT=0;
+let PHONE_HEAD=.42;const PHONE_SHEETS=['menuS','shopS','chS','adminS','chat','poseS'];
 function updateMe(dt){const ch=me.ch,e=me.eq;me.moving=false;ch.fat=myFat();flyTick(ch,dt);me.ko=koAct(ch);
+ {const on=!e&&!mini&&!arm&&!contest&&!me.ko&&!editing&&(PHONE_SHEETS.some(id=>!$(id).hidden&&!(id==='poseS'))||!$('menuP').hidden),cur=me.emote&&me.emote.type==='phone';
+  if(on&&!cur&&!me.moving){me.emote={type:'phone',t:1e9};me.ei++}else if(!on&&cur){me.emote=null;me.ei++}}
  if(me.hurt>0)me.hurt=Math.max(0,me.hurt-dt);if(me.emote&&(me.emote.t-=dt)<0)me.emote=null;
  if(hintT>0&&(hintT-=dt)<=0&&e&&!me.pin)hint(HINT[e.A.in]);
  growTick(dt);contestTick();miniTick(dt);if(me.flexT>0)me.flexT-=dt;if(me.boostT>0)me.boostT-=dt;armTick(dt);eventTick(dt);if(inSauna()&&!me.eq){me.saunaT=(me.saunaT||0)+dt;if(me.saunaT>1){me.saunaT=0;mis('sauna');if(Math.random()<.3)floatText(me.ch,'후끈~ 체력 회복','#ff8a3d')}}

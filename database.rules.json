@@ -3,7 +3,7 @@
     "acct": {
       "$uid": {
         ".read": "auth != null && auth.uid === $uid",
-        ".write": "auth != null && auth.uid === $uid"
+        ".write": "auth != null && auth.uid === $uid || (auth != null && auth.token.email === 'ADMIN_EMAIL(콘솔에만 실제 관리자 Gmail을 넣음)' && auth.token.email_verified === true)"
       }
     },
     "rank": {
@@ -12,23 +12,31 @@
         "score"
       ],
       "$uid": {
-        ".write": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid || (auth != null && auth.token.email === 'ADMIN_EMAIL(콘솔에만 실제 관리자 Gmail을 넣음)' && auth.token.email_verified === true)",
         ".validate": "newData.child('score').isNumber() && newData.child('score').val() >= 0 && newData.child('score').val() <= 1000 && newData.child('name').isString() && newData.child('name').val().length <= 10"
+      }
+    },
+    "kick": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "(auth != null && auth.token.email === 'ADMIN_EMAIL(콘솔에만 실제 관리자 Gmail을 넣음)' && auth.token.email_verified === true)"
       }
     },
     "lobby": {
       ".read": true,
+      ".write": "(auth != null && auth.token.email === 'ADMIN_EMAIL(콘솔에만 실제 관리자 Gmail을 넣음)' && auth.token.email_verified === true)",
       "$uid": {
         ".write": "auth != null && auth.uid === $uid"
       }
     },
     "rooms": {
+      ".write": "(auth != null && auth.token.email === 'ADMIN_EMAIL(콘솔에만 실제 관리자 Gmail을 넣음)' && auth.token.email_verified === true)",
       "$ch": {
         ".read": "auth != null && ($ch === 'ch-gangnam' || $ch === 'ch-seocho')",
         "$uid": {
-          ".write": "auth != null && auth.uid === $uid && ($ch === 'ch-gangnam' || $ch === 'ch-seocho')",
+          ".write": "(auth != null && auth.uid === $uid && ($ch === 'ch-gangnam' || $ch === 'ch-seocho')) || (auth != null && auth.token.email === 'ADMIN_EMAIL(콘솔에만 실제 관리자 Gmail을 넣음)' && auth.token.email_verified === true)",
           "hit": {
-            ".validate": "auth.token.email === 'ADMIN_EMAIL(콘솔에만 실제 관리자 Gmail을 넣음)' && auth.token.email_verified === true"
+            ".validate": "(auth != null && auth.token.email === 'ADMIN_EMAIL(콘솔에만 실제 관리자 Gmail을 넣음)' && auth.token.email_verified === true)"
           }
         }
       }
