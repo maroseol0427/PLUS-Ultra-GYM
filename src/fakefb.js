@@ -19,3 +19,7 @@ function ref(p,q={}){p=ks(p).join('/');const key=ks(p).at(-1)||null;const R={key
  onDisconnect(){return{remove:async()=>{disc.set(p,1)},cancel:async()=>{disc.delete(p)}}},
  orderByChild(f){return ref(p,{...q,order:f})},limitToLast(n){return ref(p,{...q,lim:n})}};return R}
 return{initializeApp(){},database(){return{ref}}}})();
+(()=>{let user=null;const cbs=[];try{user=JSON.parse(sessionStorage.getItem('fakeUser')||'null')}catch{}
+ const A={get currentUser(){return user},async signInWithPopup(){const em=window.FAKE_EMAIL||('u'+Math.random().toString(36).slice(2,7)+'@gmail.com');user={uid:'uid_'+em.split('@')[0],email:em,emailVerified:true};sessionStorage.setItem('fakeUser',JSON.stringify(user));cbs.forEach(f=>f(user));return{user}},
+  async signOut(){user=null;sessionStorage.removeItem('fakeUser');cbs.forEach(f=>f(null))},onAuthStateChanged(f){cbs.push(f);setTimeout(()=>f(user))}};
+ firebase.auth=()=>A;firebase.auth.GoogleAuthProvider=class{setCustomParameters(){}}})();

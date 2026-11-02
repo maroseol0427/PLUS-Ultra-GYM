@@ -134,6 +134,7 @@ label.k,span.k{color:var(--muted);font-size:12px}
 #start p{margin:0;color:var(--muted);font-size:12px;line-height:1.6}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 #go{padding:14px;border:0;border-radius:12px;font:400 19px var(--display);background:linear-gradient(180deg,#ffd45e,#ffb11f);box-shadow:0 6px 18px rgba(255,177,31,.3);color:#1a1405;cursor:pointer}
+#gGo{display:flex;align-items:center;justify-content:center;gap:10px;padding:14px;border:0;border-radius:12px;background:#fff;color:#1f1f1f;font:700 16px var(--body);cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.3)}#gGo:disabled{opacity:.6}
 #guest{padding:11px;border-radius:10px;border:1px solid var(--line);background:var(--btn);cursor:pointer}
 #go:disabled,#guest:disabled{opacity:.5}
 #lgMsg{min-height:1.3em;font-size:12px;color:var(--accent)}
@@ -161,7 +162,7 @@ label.k,span.k{color:var(--muted);font-size:12px}
 </head><body>
 <canvas id="c"></canvas>
 <div id="hud" class="panel T"><div class="hrow"><button id="bMenuT" class="sm" aria-label="메뉴" aria-expanded="false">☰</button><h1>PLUS Ultra GYM</h1></div><div id="net"><i></i><span>연결 중…</span></div><div id="saveSt"></div><div id="evt" hidden></div><ul id="list"></ul></div>
-<div id="menuP" class="panel" hidden><button id="bMenu">📋 내 기록</button><button id="bEdit">👕 의상 · 외모</button><button id="bChan">📍 지점 이동</button><button id="bChat">😀 감정표현</button><button id="bMute">🔊 소리 켬</button><button id="bAvatar" class="admonly">🦸 아바타 (관리자)</button><button id="bAdmin">🔑 관리자</button></div>
+<div id="menuP" class="panel" hidden><button id="bMenu">📋 내 기록</button><button id="bEdit">👕 의상 · 외모</button><button id="bChan">📍 지점 이동</button><button id="bChat">😀 감정표현</button><button id="bMute">🔊 소리 켬</button><button id="bAvatar" class="admonly">🦸 아바타 (관리자)</button><button id="bAdmin" class="admonly">🔑 관리자 패널</button><button id="bLogout">🚪 로그아웃</button></div>
 <div id="right" class="T"><div id="stats" class="panel"></div><div id="reps" class="panel" hidden><small id="repName">운동</small><strong id="repN">0</strong><small id="repSub"></small></div></div>
 <div id="log"></div>
 <div id="joy"><div id="knob"></div></div>
@@ -256,9 +257,9 @@ label.k,span.k{color:var(--muted);font-size:12px}
 
 <div id="start"><div class="panel">
   <h2><b>PLUS ULTRA</b><span>GYM · GO BEYOND</span></h2>
-  <p>아이디와 비밀번호로 들어오면 근육·코인·의상이 저장돼서 다른 기기에서도 이어서 할 수 있어요. 처음 쓰는 아이디는 새 계정이 만들어져요. 실제로 쓰는 비밀번호는 넣지 마세요.</p>
-  <div class="two"><input type="text" id="lgId" maxlength="16" placeholder="아이디" autocomplete="username" aria-label="아이디"><input type="password" id="lgPw" maxlength="32" placeholder="비밀번호" autocomplete="current-password" aria-label="비밀번호"></div>
-  <label for="nick" class="k">닉네임 (새 계정·게스트, 등판에 새겨져요)</label>
+  <p>구글 계정으로 들어오면 근육·코인·의상이 저장돼서 폰·PC 어디서든 이어서 할 수 있어요. 처음이면 아래에서 닉네임·성별·피부색을 고르고 시작하세요.</p>
+  <div class="two" hidden><input type="text" id="lgId" maxlength="16" placeholder="아이디" autocomplete="username" aria-label="아이디"><input type="password" id="lgPw" maxlength="32" placeholder="비밀번호" autocomplete="current-password" aria-label="비밀번호"></div>
+  <label for="nick" class="k">닉네임 (처음 시작할 때만, 등판에 새겨져요)</label>
   <input type="text" id="nick" maxlength="10" placeholder="닉네임" autocomplete="off">
   <div class="row tabs"><button class="sm" id="gM" aria-pressed="true">남자</button><button class="sm" id="gF" aria-pressed="false">여자</button></div>
   <span class="k">피부색</span><div class="pal" id="startS"></div>
@@ -266,8 +267,10 @@ label.k,span.k{color:var(--muted);font-size:12px}
   <span class="k">헤어·옷·액세서리·태닝은 헬스장에서 운동해 모은 코인으로 열어요</span>
   <span class="k">지점 선택 (지점마다 최대 50명 · 전체 100명)</span><div class="chans" id="chList"></div>
   <div id="lgMsg" role="status"></div>
-  <button id="go">로그인 / 새 계정</button>
-  <button id="guest">게스트로 시작 (이 기기에만 저장)</button>
+  <button id="go" hidden>로그인 / 새 계정</button>
+  <button id="guest" hidden>게스트로 시작</button>
+  <button id="gGo" class="gbtn"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><span id="gTxt">Google로 시작하기</span></button>
+  <button id="gOut" class="sm" hidden>다른 구글 계정으로 바꾸기</button>
   <span class="keys">PC: WASD 이동 · Space 점프/연타 · C 앉기 · P 포즈 · 드래그 시점 · 휠 확대 · E 기구 · 마우스로 원 그리기 · ←→ 번갈아 · Enter 채팅</span>
 </div></div>
 
@@ -861,12 +864,12 @@ let cloudT=null,cloudBusy=false,cloudDirty=false,lastRank='';
 function cloudSoon(){cloudDirty=true;clearTimeout(cloudT);cloudT=setTimeout(cloudFlush,3000)}
 async function cloudFlush(){if(!db||!acctKey||guest)return;if(cloudBusy){cloudDirty=true;return}cloudBusy=true;cloudDirty=false;
  try{await db.doc('acct/'+acctKey).set({save:JSON.parse(JSON.stringify(S)),at:Date.now()});
-  const r=JSON.stringify([S.name,muScore(S.mu),S.lvl,S.trophies]);if(r!==lastRank){await db.doc('rank/'+(await sha('rank:'+acctKey))).set({name:S.name,score:muScore(S.mu),lvl:S.lvl,tr:S.trophies,at:Date.now()});lastRank=r}
+  const r=JSON.stringify([S.name,muScore(S.mu),S.lvl,S.trophies]);if(r!==lastRank){await db.doc('rank/'+acctKey).set({name:S.name,score:muScore(S.mu),lvl:S.lvl,tr:S.trophies,at:Date.now()});lastRank=r}
   $('saveSt').textContent='클라우드에 저장됨'}catch{$('saveSt').textContent='저장 실패 · 잠시 후 다시 시도'}
  cloudBusy=false;if(cloudDirty)cloudSoon()}
 let saveT=null;function saveSoon(){clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem('gymSave4',JSON.stringify(S))}catch{}},800);if(!guest)cloudSoon()}
 let rankRows=[];
-function subscribeRank(){try{db.collection('rank').orderBy('score','desc').limit(10).onSnapshot(q=>{rankRows=q.docs.map(d=>{const v=d.data()||{};return{name:clean(v.name).slice(0,10)||'익명',score:clamp(+v.score||0,0,1000)|0,lvl:clamp(v.lvl|0,1,999),tr:clamp(v.tr|0,0,9999)}});drawBoard(rankRows);renderRank()},()=>drawBoard([],'랭킹을 불러오지 못했어요'))}catch{drawBoard([],'랭킹을 불러오지 못했어요')}}
+function subscribeRank(){try{db.collection('rank').orderBy('score','desc').limit(10).onSnapshot(q=>{rankRows=q.docs.filter(d=>d.id.length<60).map(d=>{const v=d.data()||{};return{name:clean(v.name).slice(0,10)||'익명',score:clamp(+v.score||0,0,1000)|0,lvl:clamp(v.lvl|0,1,999),tr:clamp(v.tr|0,0,9999)}});drawBoard(rankRows);renderRank()},()=>drawBoard([],'랭킹을 불러오지 못했어요'))}catch{drawBoard([],'랭킹을 불러오지 못했어요')}}
 
 // ---------- 상태 ----------
 let me=null,started=false,room=null,msgId=0,lastMsg='',asking=null,lastApproach=0,contest=null;
@@ -1659,6 +1662,22 @@ function enter(s,msg){S=s;if(!S.name)S.name=clean($('nick').value).slice(0,10)||
 $('go').onclick=()=>{audio();login()};
 $('guest').onclick=()=>{audio();guest=true;const s=S.name?S:fromStart();for(const k of['g','hs','bot'])s.look[k]=pre[k];s.look.s0=pre.s;s.look.s=tanned(pre.s,s.tan||0);if($('nick').value.trim())s.name=clean($('nick').value).slice(0,10);enter(s)};
 for(const id of['lgId','lgPw','nick'])$(id).addEventListener('keydown',e=>{if(e.key==='Enter')$('go').click()});
+// ---------- 구글 로그인 (웹 버전 전용) ----------
+let gUser=null;const inApp=()=>/KAKAOTALK|Instagram|FBAN|FBAV|Line\/|NAVER|DaumApps|everytimeApp/i.test(navigator.userAgent);
+function gUI(){$('gTxt').textContent=gUser?`${gUser.email.replace(/^(.{2}).*(@.*)$/,'$1***$2')} 로 시작하기`:'Google로 시작하기';$('gOut').hidden=!gUser}
+if(window.gymAuth){gymAuth.watch(u=>{gUser=u;gUI();if(!u&&started)location.reload()});gUI();
+ if(inApp())lgMsg('카카오톡·인스타 같은 앱 안 브라우저에서는 구글 로그인이 막혀요. 크롬이나 사파리로 열어주세요',true)}
+$('gOut').onclick=async()=>{try{await gymAuth.logout()}catch{}gUser=null;gUI()};
+$('bLogout').onclick=async()=>{try{saveSoon();await cloudFlush();await gymAuth.logout()}catch{}location.reload()};
+$('gGo').onclick=async()=>{audio();if(!window.gymAuth)return lgMsg('서버에 연결하지 못했어요. 새로고침 해 주세요',true);
+ if(inApp()){if(/KAKAOTALK/i.test(navigator.userAgent)){location.href='kakaotalk://web/openExternal?url='+encodeURIComponent(location.href);return}return lgMsg('오른쪽 위 ⋯ 메뉴에서 "다른 브라우저로 열기"를 눌러 크롬이나 사파리로 열어주세요',true)}
+ $('gGo').disabled=true;lgMsg('구글 계정 확인 중…');
+ try{const u=gUser||await gymAuth.login();if(!u)throw 0;gUser=u;gUI();await getDb();if(!db)throw 0;acctKey=u.uid;nameKey=u.uid;guest=false;
+  const a=await db.doc('acct/'+u.uid).get();
+  if(a.exists&&(a.data()||{}).save){enter(normalize(a.data().save),'다시 오셨네요!');return}
+  const ns=fromStart();await db.doc('acct/'+u.uid).set({save:ns,at:Date.now()});enter(ns,'환영해요! 새 캐릭터를 만들었어요')}
+ catch(e){lgMsg(e&&e.code==='auth/popup-closed-by-user'?'로그인 창이 닫혔어요. 다시 눌러 주세요':e&&e.code==='auth/popup-blocked'?'팝업이 막혔어요. 팝업을 허용하고 다시 눌러 주세요':'로그인하지 못했어요. 잠시 후 다시 눌러 주세요',true)}
+ finally{$('gGo').disabled=false}};
 getDb();initLobby();drawChanSign();document.fonts&&document.fonts.ready.then(drawChanSign);
 
 // ---------- 루프 ----------
