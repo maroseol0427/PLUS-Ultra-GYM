@@ -49,6 +49,7 @@ body:not(.admin) .admonly{display:none!important}
 #stats s em{background:rgba(255,197,51,.35)}
 #stats s.xp i{background:var(--live)}#stats s.sta i{background:var(--warn)}#stats s.pro i{background:var(--prot)}
 #stats u{text-decoration:none;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+#stats.mini hr,#stats.mini .mus{display:none}#stats .top{cursor:pointer}#stats .top b::after{content:' ▾';font-size:11px;color:var(--muted)}#stats.mini .top b::after{content:' ▸'}
 #stats hr{border:0;border-top:1px solid var(--line);margin:2px 0;width:100%}
 #reps{padding:6px 12px;text-align:right}
 #reps small{display:block;color:var(--muted);font-size:11px}
@@ -155,19 +156,19 @@ label.k,span.k{color:var(--muted);font-size:12px}
 .chans button span{color:var(--muted);font-size:12px;font-variant-numeric:tabular-nums}
 .chans button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}
 .chans button:disabled{opacity:.45;cursor:default}
-#talk{justify-content:flex-end;max-width:min(420px,62vw)}#talk button{padding:7px 11px;background:rgba(27,30,35,.85)}
+#talk[hidden]{display:none}#talk{justify-content:flex-end;max-width:min(420px,62vw)}#talk button{padding:7px 11px;background:rgba(27,30,35,.85)}
 #cmdF{flex-wrap:nowrap;width:250px}#cmdF input{flex:1;min-width:0;padding:8px 10px}#cmdF .go{padding:8px 12px}
 #admL{display:grid;gap:8px}
 #avL{display:grid;gap:9px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}#avL label{display:grid;grid-template-columns:78px 1fr;gap:8px;align-items:center;font-size:13px;color:var(--muted)}
 #avL select,#avL input[type=text]{font:14px var(--body);padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:#1b1e23;color:var(--fg);min-width:0}#avL input[type=color]{width:100%;height:34px;border:1px solid var(--line);border-radius:8px;background:#1b1e23;padding:2px}#avL .full{grid-column:1/-1}.adm{display:grid;grid-template-columns:84px 1fr 64px;gap:8px;align-items:center;font-size:13px}.adm input{width:100%;min-width:0}.adm b{text-align:right;font-variant-numeric:tabular-nums}
 @media (max-width:460px){#cmdF{width:200px}#talk button{padding:6px 9px;font-size:12px}}
-@media (max-width:460px){#hud{width:132px}#hud h1{font-size:14px}#stats{width:122px}#list{max-height:60px}#act .row{max-width:200px}}
+@media (max-width:460px){#log{width:min(44%,200px);font-size:11px}#log p:nth-last-child(n+4){display:none}#hud{width:132px}#hud h1{font-size:14px}#stats{width:122px}#list{max-height:60px}#act .row{max-width:200px}}
 </style>
 
 </head><body>
 <canvas id="c"></canvas>
 <div id="hud" class="panel T"><div class="hrow"><button id="bMenuT" class="sm" aria-label="메뉴" aria-expanded="false">☰</button><h1>PLUS Ultra GYM</h1></div><div id="net"><i></i><span>연결 중…</span></div><div id="saveSt"></div><div id="evt" hidden></div><ul id="list"></ul></div>
-<div id="menuP" class="panel" hidden><button id="bMenu">📋 내 기록</button><button id="bEdit">👕 의상 · 외모</button><button id="bChat">😀 감정표현</button><button id="bMute">🔊 소리 켬</button><button id="bChan" hidden>📍 지점 이동</button><button id="bMap" class="admonly">🗺 미니맵</button><button id="bAvatar" class="admonly">🦸 아바타 (관리자)</button><button id="bAdmin" class="admonly">🔑 관리자 패널</button><button id="bLogout">🚪 로그아웃</button></div>
+<div id="menuP" class="panel" hidden><button id="bMenu">📋 내 기록</button><button id="bEdit">👕 의상 · 외모</button><button id="bFind">🔎 기구 찾기 (자동 이동)</button><button id="bChat">😀 감정표현</button><button id="bGfx">🎨 그래픽: 자동</button><button id="bMute">🔊 소리 켬</button><button id="bChan" hidden>📍 지점 이동</button><button id="bMap" class="admonly">🗺 미니맵</button><button id="bAvatar" class="admonly">🦸 아바타 (관리자)</button><button id="bAdmin" class="admonly">🔑 관리자 패널</button><button id="bLogout">🚪 로그아웃</button></div>
 <div id="right" class="T"><div id="stats" class="panel"></div><div id="reps" class="panel" hidden><small id="repName">운동</small><strong id="repN">0</strong><small id="repSub"></small></div></div>
 <div id="log"></div><canvas id="mmap" width="300" height="216" hidden aria-label="미니맵"></canvas>
 <div id="joy"><div id="knob"></div></div>
@@ -176,8 +177,8 @@ label.k,span.k{color:var(--muted);font-size:12px}
 <div id="call" class="panel" hidden><small id="callSub"></small><strong id="callTxt"></strong><s><i id="callBar"></i></s></div>
 <div id="act">
   <form id="cmdF" class="row" hidden><input type="password" id="cmdIn" maxlength="40" placeholder="관리자 코드" autocomplete="off" aria-label="관리자 코드"><button class="go">확인</button></form>
-  <div class="chips" id="talk"></div>
-  <div class="row"><button class="sm" id="bJump">점프</button><button class="sm" id="bHit">때리기</button><button class="sm admonly" id="bPow" style="border-color:#ff5a3d;color:#ffb199">💥 강력펀치</button><button class="sm" id="bSit" aria-pressed="false">앉기</button><button class="sm" id="bPose">포즈</button><button class="sm" id="zIn" aria-label="확대">＋</button><button class="sm" id="zOut" aria-label="축소">－</button></div>
+  <div class="chips" id="talk" hidden></div>
+  <div class="row"><button class="sm" id="bTalk" aria-expanded="false">💬 대화</button><button class="sm" id="bJump">점프</button><button class="sm" id="bHit">때리기</button><button class="sm admonly" id="bPow" style="border-color:#ff5a3d;color:#ffb199">💥 강력펀치</button><button class="sm" id="bSit" aria-pressed="false">앉기</button><button class="sm" id="bPose">포즈</button><button class="sm" id="zIn" aria-label="확대">＋</button><button class="sm" id="zOut" aria-label="축소">－</button></div>
   <button id="use" disabled>기구 근처로</button>
 </div>
 <div id="ex" hidden>
@@ -199,6 +200,10 @@ label.k,span.k{color:var(--muted);font-size:12px}
 <div id="poseS" class="sheet" hidden>
   <h3>보디빌딩 규정 포즈 <button class="sm" id="poseX">닫기</button></h3>
   <div class="chips" id="poseChips"></div>
+</div>
+<div id="findS" class="sheet" hidden>
+  <h3>기구 찾기 · 누르면 자동으로 걸어가요 <button class="sm" id="findX">닫기</button></h3>
+  <div class="chips" id="findL"></div>
 </div>
 <div id="menuS" class="sheet" hidden>
   <h3>내 기록 <button class="sm" id="menuX">닫기</button></h3>
@@ -275,7 +280,7 @@ label.k,span.k{color:var(--muted);font-size:12px}
   <button id="guest" hidden>게스트로 시작</button>
   <button id="gGo" class="gbtn"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg><span id="gTxt">Google로 시작하기</span></button>
   <button id="gOut" class="sm" hidden>다른 구글 계정으로 바꾸기</button>
-  <span class="keys">PC: WASD 이동 · Space 점프/연타 · C 앉기 · P 포즈 · 드래그 시점 · 휠 확대 · E 기구 · 마우스로 원 그리기 · ←→ 번갈아 · Enter 채팅</span>
+  <span class="keys">PC: WASD 이동 · Space 점프/연타 · C 앉기 · P 포즈 · F 때리기 · E 기구 · T 대화 · 드래그 시점 · 휠 확대 · 마우스로 원 그리기 · ←→ 번갈아</span>
 </div></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -430,7 +435,7 @@ for(const w in HALL)for(const[a1,a2]of hallSegs(w)){const len=a2-a1,m=(a1+a2)/2,
  if(w==='right'){wall(len,25,m,-PI/2);wall(len,25+t,m,PI/2);HALL_OB.push([25,a1,25+t,a2])}
  for(const a of[a1,a2])if(Math.abs(a)<HALL[w][0]/2){const p=w==='back'||w==='front'?[a,(w==='back'?-18:18)+(w==='back'?-t:t)/2]:[(w==='left'?-25:25)+(w==='left'?-t:t)/2,a];B(scene,w==='back'||w==='front'?.08:t,4.4,w==='back'||w==='front'?t:.08,'#ffbf2e',p[0],2.2,p[1])}}
 if(THREE.Reflector){const pr=Math.min(devicePixelRatio,1.5),mr=new THREE.Reflector(new THREE.PlaneGeometry(44,2.1),{textureWidth:Math.round(Math.min(1600,innerWidth*pr)),textureHeight:Math.round(Math.min(1000,innerHeight*pr)),color:0xa9b6c2});
- mr.position.set(0,1.5,-17.97);scene.add(mr);for(const y of[.43,2.57])B(scene,44.2,.06,.04,'#9aa1aa',0,y,-17.96);for(let i=-22;i<=22;i+=5.5)B(scene,.05,2.14,.04,'#9aa1aa',i,1.5,-17.96)}
+ mr.position.set(0,1.5,-17.97);scene.add(mr);window.__mirror=mr;for(const y of[.43,2.57])B(scene,44.2,.06,.04,'#9aa1aa',0,y,-17.96);for(let i=-22;i<=22;i+=5.5)B(scene,.05,2.14,.04,'#9aa1aa',i,1.5,-17.96)}
 else{const m=new THREE.Mesh(new THREE.PlaneGeometry(20,2),new THREE.MeshStandardMaterial({color:'#b9c9d6',metalness:.2,roughness:.12,emissive:'#1c2632'}));m.position.set(0,1.45,-17.98);scene.add(m)}
 {const t=canvasTex(1024,160),x=t.image.getContext('2d');const draw=()=>{x.clearRect(0,0,1024,160);const g=x.createLinearGradient(0,30,0,130);g.addColorStop(0,'#fff3c4');g.addColorStop(.5,'#ffbf2e');g.addColorStop(1,'#ff861c');
   x.font='112px "Black Han Sans",sans-serif';x.textAlign='center';x.textBaseline='middle';x.shadowColor='#ffae1f';x.shadowBlur=30;x.fillStyle=g;x.fillText('PLUS ULTRA GYM',512,84);x.shadowBlur=0;x.fillText('PLUS ULTRA GYM',512,84);t.needsUpdate=true};
@@ -475,6 +480,13 @@ function poster(lines,bg,fg,w,a){const t=canvasTex(256,352),x=t.image.getContext
  x.fillStyle=fg;x.fillRect(58,250,140,16);x.fillRect(40,232,26,52);x.fillRect(190,232,26,52);x.font='54px "Black Han Sans",sans-serif';x.textAlign='center';lines.forEach((l,i)=>x.fillText(l,128,84+i*62,226));t.needsUpdate=true};
  draw();document.fonts&&document.fonts.ready.then(draw);onWall(new THREE.Mesh(new THREE.PlaneGeometry(1.25,1.72),new THREE.MeshBasicMaterial({map:t})),w,a,3.35)}
 for(const w in HALL)for(const[a1,a2]of hallSegs(w))for(const[y,h,c]of[[.28,.56,'#111318'],[.6,.05,'#ffbf2e'],[4.22,.05,'#3ad7ff']])onWall(new THREE.Mesh(new THREE.PlaneGeometry(a2-a1,h),h<.1?new THREE.MeshBasicMaterial({color:c}):M(c)),w,(a1+a2)/2,y);
+{const strip=(len,x,z,ry)=>{for(const[y,h,c]of[[.28,.56,'#111318'],[.6,.05,'#ffbf2e'],[4.22,.05,'#3ad7ff']]){const m=new THREE.Mesh(new THREE.PlaneGeometry(len,h),h<.1?new THREE.MeshBasicMaterial({color:c}):M(c));m.position.set(x,y,z);m.rotation.y=ry;scene.add(m)}};
+ strip(100,0,-35.96,0);strip(100,0,35.96,PI);strip(72,-49.96,0,PI/2);strip(72,49.96,0,-PI/2);
+ // 바깥 홀 칸막이 바깥면에도 같은 띠
+ for(const w in HALL)for(const[a1,a2]of hallSegs(w)){const L=a2-a1,m=(a1+a2)/2,t=.3+.01;if(w==='back')strip(L,m,-18-t,PI);if(w==='front')strip(L,m,18+t,0);if(w==='left')strip(L,-25-t,m,-PI/2);if(w==='right')strip(L,25+t,m,PI/2)}
+ // 구역 바닥 매트 (고무 매트 + 테두리 라인)
+ const mat=(x1,z1,x2,z2,c,lc)=>{const w=x2-x1,d=z2-z1,cx=(x1+x2)/2,cz=(z1+z2)/2;B(scene,w+.24,.012,d+.24,lc,cx,.006,cz);B(scene,w,.016,d,c,cx,.008,cz)};
+ mat(-47,-34,47,-21.5,'#1b1d22','#ffbf2e');mat(27,-15,47,11,'#1a1e24','#3ad7ff');mat(-49,-14.5,-34.5,8,'#211b20','#ff7eb6');mat(-10,19.8,18,33.5,'#19201b','#5ee08a')}
 textPlane('FREE WEIGHT ZONE',12,1.2,80,'#ffbf2e',0,3.4,-35.95,0);textPlane('FUNCTIONAL ZONE',12,1.2,80,'#5ee08a',0,3.4,35.95,PI);textPlane('CARDIO ZONE',12,1.2,80,'#ff7eb6',-49.95,3.4,0,PI/2);textPlane('MACHINE ZONE',12,1.2,80,'#7fd3ff',49.95,3.4,0,-PI/2);
 poster(['NO PAIN','NO GAIN'],'#e5484d','#fff4e0','left',-8.6);poster(['BEAST','MODE'],'#1b1b1f','#ffc533','left',-1.6);poster(['LEG','DAY'],'#3e8ef7','#fff4e0','left',3);
 poster(['TRAIN','EAT','SLEEP'],'#30a46c','#fff4e0','right',-8.6);poster(['PROTEIN','TIME'],'#7fd3ff','#14171c','right',-1.2);poster(['ONE MORE','REP!'],'#ff7eb6','#14171c','right',4.2);
@@ -917,7 +929,7 @@ function nearestNpc(r,f){let best=null,bd=r;for(const o of npcs){if(f&&!f(o))con
 // ---------- 몸 상태 UI ----------
 $('stats').innerHTML=`<div class="top"><b id="lvT">Lv.1</b><span id="coinT">0코인</span></div><s class="xp"><i id="xpB"></i></s>
 <div class="row7"><span>체력</span><s class="sta"><i id="staB"></i></s><u id="staV">0</u></div><div class="row7"><span>단백질</span><s class="pro"><i id="proB"></i></s><u id="proV">0</u></div><hr>`+
- MUS.map((m,i)=>`<div class="row7"><span>${m}</span><s><i id="mb${i}"></i><em id="ms${i}"></em></s><u id="mv${i}">0</u></div>`).join('');
+ MUS.map((m,i)=>`<div class="row7 mus"><span>${m}</span><s><i id="mb${i}"></i><em id="ms${i}"></em></s><u id="mv${i}">0</u></div>`).join('');
 function updateStats(){if(!me)return;$('lvT').textContent='Lv.'+S.lvl;$('coinT').textContent=S.coins+'코인';$('xpB').style.width=(S.xp/(S.lvl*40)*100)+'%';
  $('staB').style.width=(S.sta/5)+'%';$('staV').textContent=S.sta|0;$('proB').style.width=S.prot+'%';$('proV').textContent=S.prot|0;
  S.mu.forEach((v,i)=>{$('mb'+i).style.width=(v*100)+'%';const st=$('ms'+i).style;st.left=(v*100)+'%';st.width=(Math.min(S.stim[i],1-v)*100)+'%';$('mv'+i).textContent=Math.floor(v*100)})}
@@ -1550,6 +1562,24 @@ $('adminX').onclick=closeSheets;
 function openChat(){closeSheets();$('chat').hidden=false}
 function openPoses(){if(me&&me.eq)return;if(!contest)closeSheets();$('poseS').hidden=false}
 $('bChat').onclick=openChat;
+// 기구 찾기: 이름별로 묶고, 가장 가까운 빈 기구까지 길찾기로 걸어간다
+const routeMark=(()=>{const m=new THREE.Mesh(new THREE.RingGeometry(.42,.56,32),new THREE.MeshBasicMaterial({color:'#ffc533',transparent:true,opacity:.85,depthWrite:false}));m.rotation.x=-PI/2;m.position.y=.04;m.visible=false;scene.add(m);return m})();
+function endRoute(ok){const e=me.routeEq;me.route=null;me.routeEq=null;routeMark.visible=false;if(ok&&e){me.ch.ry=Math.atan2(e.x-me.ch.pos.x,e.z-me.ch.pos.z);hint(e.name+' 도착! 시작 버튼을 눌러요')}}
+function goEq(e){const f=front(e,1.1),t=freeNear(f.x,f.z),p=findPath(me.ch.pos.x,me.ch.pos.z,t[0],t[1]);me.route=p;me.routeEq=e;routeMark.position.set(t[0],.04,t[1]);routeMark.visible=true;if(me.sit){me.sit=false;syncSit()}closeSheets()}
+function openFind(){closeSheets();const el=$('findL');el.textContent='';const by={};for(const e of EQ)(by[e.name]=by[e.name]||[]).push(e);
+ for(const name of Object.keys(by).sort((a,b)=>a.localeCompare(b,'ko'))){const L=by[name],free=L.filter(e=>!occupant(e.id)),b=document.createElement('button');b.textContent=`${name} ${free.length}/${L.length}`;b.disabled=!free.length;
+  b.onclick=()=>{const p=me.ch.pos;goEq(free.sort((a,c)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(c.x-p.x,c.z-p.z))[0])};el.append(b)}$('findS').hidden=false}
+$('bFind').onclick=openFind;$('findX').onclick=closeSheets;
+// 대화 버튼 접기/펴기 (기억)
+{const set=v=>{$('talk').hidden=!v;$('bTalk').setAttribute('aria-expanded',v);$('bTalk').setAttribute('aria-pressed',v);try{localStorage.setItem('gymTalk',v?'1':'0')}catch{}};
+ set((()=>{try{return localStorage.getItem('gymTalk')??'0'}catch{return '0'}})()==='1');$('bTalk').onclick=()=>set($('talk').hidden);addEventListener('keydown',e=>{if(e.code==='KeyT'&&!isTyping(e)&&started)set($('talk').hidden)})}
+// 능력치 패널 접기 (작은 화면은 기본 접힘)
+{const st=$('stats'),set=v=>{st.classList.toggle('mini',v);try{localStorage.setItem('gymStatsMini',v?'1':'0')}catch{}};set((()=>{try{return localStorage.getItem('gymStatsMini')??(innerWidth<=460?'1':'0')}catch{return (innerWidth<=460?'1':'0')}})()==='1');st.addEventListener('click',e=>{if(e.target.closest('.top'))set(!st.classList.contains('mini'))})}
+// 그래픽 설정: 자동 / 고화질 / 저사양(해상도↓·거울 끔·시야↓)
+{const modes=['자동','고화질','저사양'];let gi=Math.max(0,modes.indexOf((()=>{try{return localStorage.getItem('gymGfx')??'자동'}catch{return '자동'}})()));
+ const apply=()=>{const m=modes[gi],dpr=devicePixelRatio||1,low=m==='저사양';renderer.setPixelRatio(low?1:m==='고화질'?Math.min(dpr,2):Math.min(dpr,matchMedia('(pointer:coarse)').matches?1.5:2));
+  if(window.__mirror)window.__mirror.visible=!low;scene.fog.far=low?60:98;scene.fog.near=low?30:45;$('bGfx').textContent='🎨 그래픽: '+m;try{localStorage.setItem('gymGfx',m)}catch{}};
+ apply();$('bGfx').onclick=()=>{gi=(gi+1)%3;apply();addLog('설정','그래픽: '+modes[gi],'#7fd3ff')}}
 // 미니맵 (관리자): 기구 회색, NPC 흐린 점, 접속 유저 하늘색+이름, 나 노란색
 $('bMap').onclick=()=>{$('mmap').hidden=!$('mmap').hidden};
 setInterval(()=>{const cv=$('mmap');if(cv.hidden||!isAdmin||!me)return;const x=cv.getContext('2d'),W=cv.width,H=cv.height,k=W/(RX*2+1),P=(px,pz)=>[(px+RX+.5)*k,(pz+RZ+.5)*k];
@@ -1561,7 +1591,7 @@ setInterval(()=>{const cv=$('mmap');if(cv.hidden||!isAdmin||!me)return;const x=c
 const menuOpen=v=>{$('menuP').hidden=!v;$('bMenuT').setAttribute('aria-expanded',v)};$('bMenuT').onclick=e=>{e.stopPropagation();menuOpen($('menuP').hidden)};
 $('menuP').addEventListener('click',e=>{if(e.target.closest('button'))setTimeout(()=>menuOpen(false))});addEventListener('pointerdown',e=>{if(!e.target.closest('#menuP,#bMenuT'))menuOpen(false)});$('chatX').onclick=closeSheets;$('bPose').onclick=openPoses;
 $('poseX').onclick=()=>{if(contest){contest=null;showCall('기권했어요','');setTimeout(()=>{$('call').hidden=true},1500);$('poseS').hidden=true;$('poseX').textContent='닫기';$('act').hidden=false;$('joy').hidden=false;me.ch.pos.set(2.6,0,13.7);extras.forEach(x=>x.act='idle')}else closeSheets()};
-function closeSheets(){for(const id of['chat','menuS','shopS','photoS','chS','adminS','avS'])$(id).hidden=true;if(!contest)$('poseS').hidden=true;if(editing){editing=false;$('editor').hidden=true;viewOffset();saveSoon()}}
+function closeSheets(){for(const id of['findS','chat','menuS','shopS','photoS','chS','adminS','avS'])$(id).hidden=true;if(!contest)$('poseS').hidden=true;if(editing){editing=false;$('editor').hidden=true;viewOffset();saveSoon()}}
 function doPose(id){if(!started||me.eq)return;me.sit=false;syncSit();me.emote={type:id,t:contest?2.5:3.5};me.ei++;mis('pose');
  if(contest)return judgePose(id);floatText(me.ch,POSEID[id].n,'#ff7eb6');npcEvent('pose')}
 function doEmote(type){closeSheets();if(!started||me.eq)return;me.sit=false;syncSit();me.emote={type,t:2.2};me.ei++;
@@ -1749,7 +1779,7 @@ function animate(a,act){const ch=a.ch,e=a.eq;
  ch.root.updateMatrixWorld(true);if(ch.bub&&ch.bub.visible&&(ch.bubT-=clock.dtv)<0)ch.bub.visible=false}
 function meAct(){return me.ko&&!me.eq?(me.ko==='dizzy'&&me.moving?'walk':me.ko):me.eq?null:mini?mini.act:arm?'armw':me.moving?'walk':me.emote?me.emote.type:me.sit?'sit':me.hurt>0?'hurt':'idle'}
 let statT=0;
-let PHONE_HEAD=.42;const PHONE_SHEETS=['menuS','shopS','chS','adminS','chat','poseS'];
+let PHONE_HEAD=.42;const PHONE_SHEETS=['findS','menuS','shopS','chS','adminS','chat','poseS'];
 function updateMe(dt){const ch=me.ch,e=me.eq;me.moving=false;ch.fat=myFat();flyTick(ch,dt);me.ko=koAct(ch);
  {const on=!e&&!mini&&!arm&&!contest&&!me.ko&&!editing&&(PHONE_SHEETS.some(id=>!$(id).hidden&&!(id==='poseS'))||!$('menuP').hidden),cur=me.emote&&me.emote.type==='phone';
   if(on&&!cur&&!me.moving){me.emote={type:'phone',t:1e9};me.ei++}else if(!on&&cur){me.emote=null;me.ei++}}
@@ -1763,6 +1793,8 @@ function updateMe(dt){const ch=me.ch,e=me.eq;me.moving=false;ch.fat=myFat();flyT
   if(me.escort){const c=me.escort.ch,tx=c.pos.x+Math.sin(c.ry+PI)*.9,tz=c.pos.z+Math.cos(c.ry+PI)*.9,dx=tx-ch.pos.x,dz=tz-ch.pos.z,dd=Math.hypot(dx,dz);
    if(dd>.1){const st=Math.min(dd,3.8*dt);ch.pos.x+=dx/dd*st;ch.pos.z+=dz/dd*st;turn(ch,Math.atan2(dx,dz),dt*10);me.moving=true;ch.t+=dt*9}else ch.t+=dt}
   else if(!editing&&!contest&&!arm&&!mini&&me.ko!=='fly'&&me.ko!=='down'){let ix=joy.x+(keys.KeyD||keys.ArrowRight?1:0)-(keys.KeyA||keys.ArrowLeft?1:0),iz=joy.y+(keys.KeyS||keys.ArrowDown?1:0)-(keys.KeyW||keys.ArrowUp?1:0);
+   if(me.route&&Math.hypot(ix,iz)<=.1){const[tx,tz]=me.route[0],dx=tx-ch.pos.x,dz=tz-ch.pos.z,dd=Math.hypot(dx,dz);if(dd<.25){me.route.shift();if(!me.route.length)endRoute(true)}else{const st=Math.min(dd,4.2*dt);ch.pos.x+=dx/dd*st;ch.pos.z+=dz/dd*st;turn(ch,Math.atan2(dx,dz),dt*12);me.moving=true;ch.t+=dt*10}}
+   else if(me.route&&Math.hypot(ix,iz)>.1)endRoute(false);
    const m=Math.min(1,Math.hypot(ix,iz));if(m>.1){const n=Math.hypot(ix,iz);ix/=n;iz/=n;const cy=Math.cos(cur.y),sy=Math.sin(cur.y),wx=cy*ix+sy*iz,wz=-sy*ix+cy*iz,sp=3.4*m*(me.hurt>0?.45:1)*(inPool(ch.pos.x,ch.pos.z)?.55:1);if(inPool(ch.pos.x,ch.pos.z)){S.swim+=dt;S.fat=Math.max(6,S.fat-dt*.01);if((me.swimAcc=(me.swimAcc||0)+dt)>1){me.swimAcc=0;mis('swim')}}
     ch.pos.x+=wx*sp*dt;ch.pos.z+=wz*sp*dt;turn(ch,Math.atan2(wx,wz),dt*12);me.moving=true;me.emote=null;if(me.sit){me.sit=false;syncSit()}ch.t+=dt*10*m*(me.hurt>0?.6:1)}else ch.t+=dt}
   else ch.t+=dt}
