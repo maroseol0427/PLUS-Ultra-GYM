@@ -31,6 +31,7 @@ body:not(.admin) .admonly{display:none!important}
 #net i{width:7px;height:7px;border-radius:50%;background:var(--muted);flex:none}
 #net.on i{background:var(--live);box-shadow:0 0 6px var(--live)}
 #saveSt{color:var(--muted);font-size:10px;margin-bottom:5px}
+#chal{color:var(--accent);font-size:11px;font-weight:700;margin-bottom:5px}
 #evt{color:var(--live);font-size:11px;font-weight:700;margin-bottom:5px}
 #list{list-style:none;margin:0;padding:0;display:grid;gap:2px;max-height:110px;overflow:hidden}
 #list li{display:flex;gap:5px;align-items:center;white-space:nowrap;overflow:hidden}
@@ -105,6 +106,7 @@ body:not(.admin) #mmap{display:none}
 .sheet h4{margin:4px 0 0;font-size:13px;color:var(--muted);letter-spacing:.04em}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chips button{padding:8px 12px;border-radius:16px;border:1px solid var(--line);background:var(--btn);cursor:pointer;font-size:13px}
+.chips.dex button{cursor:default;opacity:.45}.chips.dex button.on{opacity:1;border-color:var(--accent);color:var(--accent)}
 .chips.emo button{border-color:var(--accent)}
 #poseChips button{padding:12px 14px;font-size:14px;border-radius:12px}
 form.row{flex-wrap:nowrap}
@@ -167,7 +169,7 @@ label.k,span.k{color:var(--muted);font-size:12px}
 
 </head><body>
 <canvas id="c"></canvas>
-<div id="hud" class="panel T"><div class="hrow"><button id="bMenuT" class="sm" aria-label="메뉴" aria-expanded="false">☰</button><h1>PLUS Ultra GYM</h1></div><div id="net"><i></i><span>연결 중…</span></div><div id="saveSt"></div><div id="evt" hidden></div><ul id="list"></ul></div>
+<div id="hud" class="panel T"><div class="hrow"><button id="bMenuT" class="sm" aria-label="메뉴" aria-expanded="false">☰</button><h1>PLUS Ultra GYM</h1></div><div id="net"><i></i><span>연결 중…</span></div><div id="saveSt"></div><div id="chal" hidden></div><div id="evt" hidden></div><ul id="list"></ul></div>
 <div id="menuP" class="panel" hidden><button id="bMenu">📋 내 기록</button><button id="bEdit">👕 의상 · 외모</button><button id="bFind">🔎 기구 찾기 (자동 이동)</button><button id="bChat">😀 감정표현</button><button id="bGfx">🎨 그래픽: 자동</button><button id="bMute">🔊 소리 켬</button><button id="bChan" hidden>📍 지점 이동</button><button id="bMap" class="admonly">🗺 미니맵</button><button id="bAvatar" class="admonly">🦸 아바타 (관리자)</button><button id="bAdmin" class="admonly">🔑 관리자 패널</button><button id="bLogout">🚪 로그아웃</button></div>
 <div id="right" class="T"><div id="stats" class="panel"></div><div id="reps" class="panel" hidden><small id="repName">운동</small><strong id="repN">0</strong><small id="repSub"></small></div></div>
 <div id="log"></div><canvas id="mmap" width="300" height="216" hidden aria-label="미니맵"></canvas>
@@ -209,6 +211,7 @@ label.k,span.k{color:var(--muted);font-size:12px}
   <h3>내 기록 <button class="sm" id="menuX">닫기</button></h3>
   <span class="k" id="attL"></span>
   <h4>오늘의 미션</h4><ul class="list" id="misL"></ul>
+  <h4 id="dexH">기구 도감</h4><div class="chips dex" id="dexL"></div>
   <h4>칭호</h4><ul class="list" id="titL"></ul>
   <h4>인바디</h4><div id="inb"></div>
   <h4>근육 점수 랭킹</h4><ol id="rankL"></ol>
@@ -423,7 +426,7 @@ const woodT=patTex(512,256,3,2,(x,w,h)=>{for(let i=0;i<8;i++){const y=i*32;x.fil
  const cy=new THREE.MeshBasicMaterial({color:'#3ad7ff'});for(const[w,x,z,r]of[[49,0,-17.6,0],[49,0,17.6,0],[35,-24.6,0,1],[35,24.6,0,1]]){const p=new THREE.Mesh(new THREE.PlaneGeometry(w,.06),cy);p.rotation.x=PI/2;if(r)p.rotation.z=PI/2;p.position.set(x,4.385,z);scene.add(p)}}B(scene,15,.02,3.4,'#1d2024',-4,.01,10.5);B(scene,9,.02,2.4,'#1d2024',-7.6,.01,-6);B(scene,10,.02,2.4,'#1d2024',8.8,.01,-6);
 const wallImg=patTex(256,512,1,1,(x,w,h)=>{const g=x.createLinearGradient(0,0,0,h);g.addColorStop(0,'#2b2f3a');g.addColorStop(1,'#191c23');x.fillStyle=g;x.fillRect(0,0,w,h);
  for(let i=0;i<8;i++){x.fillStyle='rgba(255,255,255,.035)';x.fillRect(i*32+2,0,3,h);x.fillStyle='rgba(0,0,0,.28)';x.fillRect(i*32+29,0,3,h)}x.fillStyle='rgba(0,0,0,.45)';x.fillRect(0,0,3,h)}).image;
-function wall(w,x,z,ry){const t=new THREE.CanvasTexture(wallImg);t.wrapS=THREE.RepeatWrapping;t.repeat.set(w/2.6,1);const m=new THREE.Mesh(new THREE.PlaneGeometry(w,4.4),new THREE.MeshStandardMaterial({map:t,roughness:.9}));m.position.set(x,2.2,z);m.rotation.y=ry;scene.add(m)}
+function wall(w,x,z,ry){const t=new THREE.CanvasTexture(wallImg);t.wrapS=THREE.RepeatWrapping;t.repeat.set(w/2.6,1);const m=new THREE.Mesh(new THREE.PlaneGeometry(w,4.4),new THREE.MeshStandardMaterial({map:t,roughness:.9}));m.position.set(x,2.2,z);m.rotation.y=ry;m.userData.camWall=true;scene.add(m)}
 wall(100,0,-36,0);wall(100,0,36,PI);wall(72,-50,0,PI/2);wall(72,50,0,-PI/2);
 // 가운데 홀 칸막이: 문(gap) 구간만 비우고 안·밖 양면 + 문틀 / HALL_OB = 길찾기·충돌용 벽 사각형
 const HALL={back:[50,[]],front:[50,[[-17,-12],[14.5,18.5]]],left:[36,[[12.5,16.5]]],right:[36,[[12.5,16.5]]]},HALL_OB=[];
@@ -868,12 +871,12 @@ function snapKg(e,x){const L=e.A.load;if(L==='bar')return 20+20*clamp(Math.round
 const kgLabel=(A,kg)=>A.load==='db'&&!A.single?`${kg}kg ×2`:`${kg}kg`;
 
 // ---------- 저장 데이터 ----------
-function blankSave(){return{name:'',look:{c:SHIRTS[0],f:BLANK,b:BLANK,ft:'',bt:'',g:'m',h:HAIRS[0],acc:'',belt:false,fc:'0000',s:SKINS[1],s0:SKINS[1],hs:'short',top:'tee',bot:'shorts',p:PANTSC[0]},tan:0,mu:padMu([]),stim:padMu([]),prot:50,sta:500,fat:20,
+function blankSave(){return{dex:[],chal:null,name:'',look:{c:SHIRTS[0],f:BLANK,b:BLANK,ft:'',bt:'',g:'m',h:HAIRS[0],acc:'',belt:false,fc:'0000',s:SKINS[1],s0:SKINS[1],hs:'short',top:'tee',bot:'shorts',p:PANTSC[0]},tan:0,mu:padMu([]),stim:padMu([]),prot:50,sta:500,fat:20,
  coins:60,xp:0,lvl:1,owned:[],wt:{},ms:null,trophies:0,contests:0,reps:0,best:{},steps:0,eaten:0,arm:0,photos:0,climb:0,climbBest:0,hoop:0,gx:0,swim:0,yoga:0,pmBest:0,plankBest:0,ropeBest:0,titles:[],title:'',att:null}}
 function normalize(s){const b=blankSave();if(!s||typeof s!=='object')return b;try{s=JSON.parse(JSON.stringify(s))}catch{return b}const o=Object.assign(b,s);o.look=Object.assign(blankSave().look,lookDef(null,(s.look||{}).g),s.look||{});
  o.mu=padMu(s.mu);o.stim=padMu(s.stim);for(const k of['prot','sta','fat','coins','xp','lvl','trophies','contests','reps'])o[k]=Math.max(0,+o[k]||0);o.lvl=Math.max(1,o.lvl|0);
  o.best=o.best&&typeof o.best==='object'?o.best:{};o.titles=Array.isArray(o.titles)?o.titles.filter(x=>typeof x==='string'):[];o.title=typeof o.title==='string'?o.title:'';o.avatar=typeof o.avatar==='string'?o.avatar:'';o.avs=Array.isArray(o.avs)?o.avs.filter(a=>a&&typeof a.id==='string'&&a.look&&typeof a.look==='object').slice(0,20).map(a=>({id:a.id,n:String(a.n||'아바타').slice(0,12),look:a.look,mu:padMu(a.mu),fat:clamp(+a.fat||18,6,40)})):[];
- for(const k of['steps','eaten','arm','photos','climb','climbBest','hoop','gx','swim','yoga','pmBest','plankBest','ropeBest'])o[k]=Math.max(0,+o[k]||0);o.strMul=clamp(+o.strMul||1,1,10);o.prot=clamp(o.prot,0,100);o.sta=clamp(o.sta,0,500);o.fat=clamp(o.fat||20,6,40);o.owned=Array.isArray(o.owned)?o.owned.filter(x=>typeof x==='string'):[];o.wt=o.wt&&typeof o.wt==='object'&&!Array.isArray(o.wt)?o.wt:{};for(const k in o.wt)if(!Number.isFinite(o.wt[k]))delete o.wt[k];
+ o.dex=Array.isArray(o.dex)?o.dex.filter(x=>typeof x==='string'):[];o.chal=o.chal&&typeof o.chal==='object'?o.chal:null;for(const k of['steps','eaten','arm','photos','climb','climbBest','hoop','gx','swim','yoga','pmBest','plankBest','ropeBest'])o[k]=Math.max(0,+o[k]||0);o.strMul=clamp(+o.strMul||1,1,10);o.prot=clamp(o.prot,0,100);o.sta=clamp(o.sta,0,500);o.fat=clamp(o.fat||20,6,40);o.owned=Array.isArray(o.owned)?o.owned.filter(x=>typeof x==='string'):[];o.wt=o.wt&&typeof o.wt==='object'&&!Array.isArray(o.wt)?o.wt:{};for(const k in o.wt)if(!Number.isFinite(o.wt[k]))delete o.wt[k];
  if(!/^[0-4]{4}$/.test(o.look.fc||''))o.look.fc='0000';
  if(!/^#[0-9a-f]{6}$/i.test(o.look.s0||''))o.look.s0=/^#[0-9a-f]{6}$/i.test(o.look.s||'')?o.look.s:SKINS[1];o.tan=clamp(o.tan|0,0,TAN_MAX);o.look.s=tanned(o.look.s0,o.tan);
  if(!/^[0-7]{224}$/.test(o.look.f))o.look.f=BLANK;if(!/^[0-7]{224}$/.test(o.look.b))o.look.b=BLANK;return o}
@@ -969,7 +972,7 @@ function liftUpdate(dt){const ch=me.ch,e=me.eq,d=diff();
  if(ch.c>.05){me.att+=dt;me.zeroT=0}else if((me.zeroT+=dt)>1.2){me.att=0;me.zeroT=0}
  if(ch.c>=1){ch.c=1;me.phase='down';me.att=0;me.needLow=me.needLowK=true;rep()}
  else if((e.act==='bench'||e.act==='incline')&&(me.att>6||(d>1.15&&me.att>2.5)))pinStart()}
-function rep(){const e=me.eq,A=e.A,d=A.load?diff():.6;me.reps++;S.reps++;me.lastEx=performance.now();
+function rep(){const e=me.eq,A=e.A,d=A.load?diff():.6;me.reps++;S.reps++;me.lastEx=performance.now();dexTick(e);
  const g=A.in==='tap2'?.0015:.006*(.5+Math.min(1.5,d));
  A.w.forEach((w,i)=>S.stim[i]=Math.min(.3,S.stim[i]+w*g));
  if(A.in==='tap2'){S.steps++;S.sta=Math.max(0,S.sta-.025);S.fat=Math.max(6,S.fat-(ev&&ev.k==='burn'?.012:.004));me.ch.fat=S.fat;(e.act==='bag'?SFX.punch:SFX.tick)();
@@ -1135,7 +1138,8 @@ function inbody(){const sum=S.mu.reduce((a,b)=>a+b,0),avg=sum/NM,f=S.look.g==='f
 function renderMenu(){todayMissions();renderTitles();const ml=$('misL');ml.textContent='';
  for(const m of S.ms.list){const li=document.createElement('li'),d=document.createElement('div'),s=document.createElement('small'),r=document.createElement('b');d.textContent=m.t;s.textContent='보상 50코인 · 경험치 30';d.append(s);r.textContent=m.done?'완료':`${m.p}/${m.n}`;if(m.done)li.className='done';li.append(d,r);ml.append(li)}
  const ib=$('inb');ib.textContent='';for(const[k,v]of inbody()){const d=document.createElement('div'),s=document.createElement('small'),b=document.createElement('b');s.textContent=k;b.textContent=v;d.append(s,b);ib.append(d)}
- renderRank()}
+ renderRank();const dl=$('dexL');dl.textContent='';$('dexH').textContent=`기구 도감 ${S.dex.length}/${EQ_NAMES.length} · 처음 쓰는 기구마다 +20코인`;
+ for(const n of EQ_NAMES){const b=document.createElement('button');b.textContent=(S.dex.includes(n)?'✓ ':'')+n;b.className=S.dex.includes(n)?'on':'';b.tabIndex=-1;dl.append(b)}}
 function renderRank(){const ol=$('rankL');if(!ol)return;ol.textContent='';if(!rankRows.length){const li=document.createElement('li');li.textContent=db?'아직 기록이 없어요. 로그인해서 운동하면 올라가요':'온라인 랭킹을 쓸 수 없어요';ol.append(li);return}
  for(const r of rankRows){const li=document.createElement('li'),sp=document.createElement('span');li.textContent=`${r.name} · ${r.score}점`;sp.textContent=`Lv.${r.lvl}${r.tr?' · 우승 '+r.tr:''}`;li.append(sp);ol.append(li)}}
 function openMenu(){closeSheets();renderMenu();$('menuS').hidden=false}
@@ -1263,13 +1267,25 @@ function eventTick(dt){if(ev){ev.t-=dt;$('evt').textContent=`${ev.n} · ${Math.c
 // ----- 칭호 / 출석 -----
 const big3=()=>(S.best.bench||0)+(S.best.squat||0)+(S.best.dead||0);
 const TITLES=[['헬린이','처음 온 사람',()=>true],['꾸준러','총 200회 반복',()=>S.reps>=200],['3대 200','벤치+스쿼트+데드 최고 무게 합 200kg',()=>big3()>=200],['3대 300','최고 무게 합 300kg',()=>big3()>=300],
- ['3대 500','최고 무게 합 500kg',()=>big3()>=500],['3대 600 강자','최고 무게 합 600kg',()=>big3()>=600],['3대 700 괴력왕','최고 무게 합 700kg',()=>big3()>=700],['3대 800 헤라클레스','최고 무게 합 800kg',()=>big3()>=800],['3대 900 타이탄','최고 무게 합 900kg',()=>big3()>=900],['3대 1000 근육신','최고 무게 합 1000kg',()=>big3()>=1000],['유산소 마스터','유산소 1000회',()=>S.steps>=1000],['단백질 중독','단백질 음식 20번',()=>S.eaten>=20],['팔씨름 챔프','팔씨름 5승',()=>S.arm>=5],
+ ['3대 500','최고 무게 합 500kg',()=>big3()>=500],['3대 600 강자','최고 무게 합 600kg',()=>big3()>=600],['3대 700 괴력왕','최고 무게 합 700kg',()=>big3()>=700],['3대 800 헤라클레스','최고 무게 합 800kg',()=>big3()>=800],['3대 900 타이탄','최고 무게 합 900kg',()=>big3()>=900],['3대 1000 근육신','최고 무게 합 1000kg',()=>big3()>=1000],['기구 마스터','기구 도감 전부 채우기',()=>S.dex.length>=EQ_NAMES.length],['유산소 마스터','유산소 1000회',()=>S.steps>=1000],['단백질 중독','단백질 음식 20번',()=>S.eaten>=20],['팔씨름 챔프','팔씨름 5승',()=>S.arm>=5],
  ['인증샷 장인','인증샷 5장',()=>S.photos>=5],['포징킹','포징 대회 우승',()=>S.trophies>=1],['근육 300','근육 점수 300점',()=>muScore(S.mu)>=300],['스파이더맨','클라이밍 완등 5회',()=>S.climb>=5],['슈터','자유투 20골',()=>S.hoop>=20],['댄스 머신','GX 클래스 5회',()=>S.gx>=5],['물개','수영 120초',()=>S.swim>=120],['핵주먹','펀칭 머신 800점',()=>S.pmBest>=800],['코어 장인','플랭크 90초',()=>S.plankBest>=90],['줄넘기 달인','줄넘기 100개',()=>S.ropeBest>=100],['구릿빛 피부','태닝 6단계 완료',()=>(S.tan||0)>=TAN_MAX],['요가 마스터','요가 클래스 5회',()=>S.yoga>=5],['보디빌더','근육 점수 700점',()=>muScore(S.mu)>=700]];
 function checkTitles(){for(const[t]of TITLES.filter(x=>x[2]()))if(!S.titles.includes(t)){S.titles.push(t);if(t!=='헬린이'){floatText(me.ch,'칭호 획득: '+t,'#ff7eb6');SFX.fan();addLog('칭호',`[${t}] 획득! 기록 메뉴에서 달 수 있어요`,'#ff7eb6')}saveSoon()}}
 function renderTitles(){const ul=$('titL');ul.textContent='';for(const[t,d,f]of TITLES){const li=document.createElement('li'),dv=document.createElement('div'),sm=document.createElement('small'),b=document.createElement('button');
  dv.textContent=t;sm.textContent=d;dv.append(sm);const has=S.titles.includes(t);b.className='go';b.textContent=!has?'잠김':S.title===t?'떼기':'달기';b.disabled=!has;
  b.onclick=()=>{S.title=S.title===t?'':t;setTag(me.ch.tag,myTag(),'#ffc533');renderTitles();saveSoon()};if(!has)li.className='done';li.append(dv,b);ul.append(li)}
  $('attL').textContent=S.att?`출석 ${S.att.streak}일 연속 · 내일도 오면 보상이 커져요`:''}
+// 기구 도감·오늘의 챌린지: 이름 단위로 센다 (같은 이름 기구는 하나로)
+const EQ_NAMES=[...new Set(EQ.map(e=>e.name))].sort((a,b)=>a.localeCompare(b,'ko'));
+const chalRings=[];
+function chalInit(){const day=new Date().toLocaleDateString('sv');if(!S.chal||S.chal.day!==day){let h=7;for(const c of day+'ch')h=(h*31+c.charCodeAt(0))>>>0;
+  const pool=EQ_NAMES.filter(n=>EQ.filter(e=>e.name===n).length>=2),name=pool[h%pool.length],tap=EQ.find(e=>e.name===name).A.in==='tap2';S.chal={day,name,n:tap?200:30,p:0,done:false}}
+ for(const r of chalRings)scene.remove(r);chalRings.length=0;
+ if(!S.chal.done)for(const e of EQ)if(e.name===S.chal.name){const r=new THREE.Mesh(new THREE.RingGeometry(.9,1.05,40),new THREE.MeshBasicMaterial({color:'#ffc533',transparent:true,opacity:.7,depthWrite:false}));r.rotation.x=-PI/2;r.position.set(e.x,.035,e.z);scene.add(r);chalRings.push(r)}
+ chalUI()}
+function chalUI(){const c=S.chal,el=$('chal');if(!c)return;el.hidden=false;el.textContent=c.done?`⭐ 오늘의 챌린지 완료!`:`⭐ 오늘의 챌린지: ${c.name} ${c.p}/${c.n}`}
+function dexTick(e){if(!S.dex.includes(e.name)){S.dex.push(e.name);coin(20);floatText(me.ch,'도감 등록! '+e.name,'#7fd3ff');addLog('도감',`${e.name} 등록 (${S.dex.length}/${EQ_NAMES.length}) +20코인`,'#7fd3ff')}
+ const c=S.chal;if(c&&!c.done&&c.name===e.name){c.p++;if(c.p>=c.n){c.done=true;coin(150);gainXp(80);floatText(me.ch,'챌린지 성공! +150코인','#ffc533');SFX.chime();addLog('챌린지',`오늘의 챌린지 ${c.name} 성공! +150코인`,'#ffc533');for(const r of chalRings)scene.remove(r);chalRings.length=0}chalUI()}}
+setInterval(()=>{const t=performance.now()/1000;for(const r of chalRings){r.material.opacity=.45+.35*Math.sin(t*3);r.scale.setScalar(1+.06*Math.sin(t*3))}},50);
 function attendance(){const day=new Date().toLocaleDateString('sv');if(S.att&&S.att.day===day)return;const yest=new Date(Date.now()-864e5).toLocaleDateString('sv');
  const streak=S.att&&S.att.day===yest?S.att.streak+1:1;S.att={day,streak};const r=Math.min(100,20+10*streak);S.coins+=r;
  setTimeout(()=>{floatText(me.ch,`출석 ${streak}일차! +${r}코인`,'#5ee08a');SFX.chime();addLog('출석',`${streak}일 연속 출석 보상 ${r}코인`,'#5ee08a')},1200);saveSoon()}
@@ -1343,7 +1359,15 @@ const NPCS=[{n:'코치 민수',g:'m',h:'#1b1b1f',c:'#1b1b1f',ft:'TRAINER',bt:'CO
  {n:'워킹 소희',g:'f',h:'#e3c76f',hs:'pony',c:'#8e4ec6',bt:'',pers:'kind',mu:[.1,.1,.1,.1,.4,.3,.5],stay:'tm6'},
  {n:'계단 유나',g:'f',h:'#4a2f1e',hs:'twin',c:'#30a46c',bt:'YUNA',pers:'chatty',mu:[.1,.1,.1,.1,.5,.3,.6],stay:'st2'},
  {n:'계단 서현',g:'f',h:'#1b1b1f',hs:'long',c:'#3e8ef7',bt:'',pers:'grumpy',mu:[.1,.1,.1,.1,.5,.3,.6],stay:'st3'},
- {n:'계단 지민',g:'f',h:'#c94a6a',hs:'bun',c:'#f5a524',bt:'',pers:'kind',mu:[.1,.1,.1,.1,.5,.3,.6],stay:'st4'}];
+ {n:'계단 지민',g:'f',h:'#c94a6a',hs:'bun',c:'#f5a524',bt:'',pers:'kind',mu:[.1,.1,.1,.1,.5,.3,.6],stay:'st4'},
+ {n:'벌크 준호',g:'m',h:'#1b1b1f',hs:'buzz',c:'#3a3f48',bt:'BULK',pers:'showoff',mu:[.9,.9,.8,.9,.9,.4,.7]},
+ {n:'직장인 현우',g:'m',h:'#4a2f1e',hs:'curtain',c:'#7a86ff',bt:'',pers:'quiet',mu:[.3,.3,.3,.3,.3,.2,.3]},
+ {n:'필라 예린',g:'f',h:'#e3c76f',hs:'pony',c:'#5ee08a',bt:'YERIN',pers:'kind',mu:[.2,.2,.2,.2,.5,.6,.6]},
+ {n:'대학생 승민',g:'m',h:'#1b1b1f',hs:'twoblock',c:'#f5a524',bt:'SM',pers:'chatty',mu:[.4,.4,.4,.4,.4,.3,.4]},
+ {n:'크로스핏 보라',g:'f',h:'#c94a6a',hs:'braid',c:'#e5484d',bt:'WOD',pers:'showoff',mu:[.5,.5,.5,.5,.7,.6,.7]},
+ {n:'다이어터 경민',g:'m',h:'#4a2f1e',hs:'short',c:'#f3efe6',bt:'D-30',pers:'chatty',mu:[.1,.1,.1,.1,.2,.1,.2]},
+ {n:'파워 은서',g:'f',h:'#1b1b1f',hs:'bob',c:'#8e4ec6',bt:'POWER',pers:'grumpy',mu:[.6,.6,.5,.5,.9,.5,.9],belt:true},
+ {n:'산책 할아버지',g:'m',h:'#c8ccd2',hs:'short',c:'#30a46c',bt:'',pers:'kind',mu:[.1,.1,.1,.1,.3,.1,.2]}];
 const WALKL=['이 드라마 너무 재밌다ㅋㅋ','주인공 왜 저래…','다음 화 궁금해!','걸으면서 보니까 시간 순삭','광고 언제 끝나…'],STAIRL=['헉헉 몇 층째지…','다리 터질 것 같아','천국 가는 중…ㅋㅋ','엉덩이 불타는 중'];
 for(const p of NPCS){const lk={c:p.c,f:BLANK,b:BLANK,ft:p.ft||'',bt:p.bt||'',g:p.g,h:p.h,acc:p.acc||'',belt:!!p.belt};if(p.hs)lk.hs=p.hs;const ch=makeChar(lk,p.mu,16);setTag(ch.tag,p.n,'#9ad7ff');ch.pos.set(rnd(-8,8),0,rnd(-4,8));
  npcs.push({npc:true,n:p.n,pers:p.pers,ch,mode:'roam',eq:null,act:'idle',tx:ch.pos.x,tz:ch.pos.z,wait:rnd(0,3),target:null,wantEq:null,reps:0,goal:0,cyc:0,talk:rnd(6,16),
@@ -1567,7 +1591,7 @@ const routeMark=(()=>{const m=new THREE.Mesh(new THREE.RingGeometry(.42,.56,32),
 function endRoute(ok){const e=me.routeEq;me.route=null;me.routeEq=null;routeMark.visible=false;if(ok&&e){me.ch.ry=Math.atan2(e.x-me.ch.pos.x,e.z-me.ch.pos.z);hint(e.name+' 도착! 시작 버튼을 눌러요')}}
 function goEq(e){const f=front(e,1.1),t=freeNear(f.x,f.z),p=findPath(me.ch.pos.x,me.ch.pos.z,t[0],t[1]);me.route=p;me.routeEq=e;routeMark.position.set(t[0],.04,t[1]);routeMark.visible=true;if(me.sit){me.sit=false;syncSit()}closeSheets()}
 function openFind(){closeSheets();const el=$('findL');el.textContent='';const by={};for(const e of EQ)(by[e.name]=by[e.name]||[]).push(e);
- for(const name of Object.keys(by).sort((a,b)=>a.localeCompare(b,'ko'))){const L=by[name],free=L.filter(e=>!occupant(e.id)),b=document.createElement('button');b.textContent=`${name} ${free.length}/${L.length}`;b.disabled=!free.length;
+ for(const name of Object.keys(by).sort((a,b)=>a.localeCompare(b,'ko'))){const L=by[name],free=L.filter(e=>!occupant(e.id)),b=document.createElement('button');b.textContent=`${S.chal&&S.chal.name===name&&!S.chal.done?'⭐ ':''}${S.dex.includes(name)?'':'🆕 '}${name} ${free.length}/${L.length}`;b.disabled=!free.length;
   b.onclick=()=>{const p=me.ch.pos;goEq(free.sort((a,c)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(c.x-p.x,c.z-p.z))[0])};el.append(b)}$('findS').hidden=false}
 $('bFind').onclick=openFind;$('findX').onclick=closeSheets;
 // 대화 버튼 접기/펴기 (기억)
@@ -1745,7 +1769,7 @@ function enter(s,msg){S=s;if(!S.name)S.name=clean($('nick').value).slice(0,10)||
  const fcG=i=>(S.look.fc||'0000')[i],fcS=(i,v)=>{edFocus='head';const a=(S.look.fc||'0000').split('');a[i]=v;S.look.fc=a.join('');rebuildMe();drawGrid()};
  tabRow($('eyR'),EYES,()=>fcG(0),v=>fcS(0,v));tabRow($('brR'),BROWS,()=>fcG(1),v=>fcS(1,v));tabRow($('moR'),MOUTHS,()=>fcG(2),v=>fcS(2,v));tabRow($('bdR'),BEARDS,()=>fcG(3),v=>fcS(3,v),'bd');
  $('saveSt').textContent=guest?'게스트 · 이 기기에만 저장':'로그인됨 · 클라우드 저장';
- attendance();checkTitles();setInterval(checkTitles,2000);setTag(me.ch.tag,myTag(),'#ffc533');
+ attendance();chalInit();checkTitles();setInterval(checkTitles,2000);setTag(me.ch.tag,myTag(),'#ffc533');
  $('start').hidden=true;started=true;try{gtag('event','game_start')}catch(e){}updateStats();renderList();saveSoon();connect();getDb();if(msg)addLog('알림',msg,'#5ee08a');addLog('팁','운동하면 근육이 커져요. 운동 후 단백질을 먹으면 더 빨리 크고, 운동 안 하고 먹으면 살쪄요','#7fd3ff')}
 $('go').onclick=()=>{audio();login()};
 $('guest').onclick=()=>{audio();guest=true;const s=S.name?S:fromStart();for(const k of['g','hs','bot'])s.look[k]=pre[k];s.look.s0=pre.s;s.look.s=tanned(pre.s,s.tan||0);if($('nick').value.trim())s.name=clean($('nick').value).slice(0,10);enter(s)};
@@ -1810,7 +1834,7 @@ function updateMe(dt){const ch=me.ch,e=me.eq;me.moving=false;ch.fat=myFat();flyT
  sendPresence(dt);if((listT+=dt)>1){listT=0;renderList()}}
 const camRay=new THREE.Raycaster();let camCol=null;
 // 카메라가 기구·벽 안으로 들어가 몸이 가려지는 문제: 대상→카메라 방향으로 레이를 쏴서 가로막히면 앞으로 당긴다
-function buildCamCol(){camCol=[];for(const c of scene.children){if(c.userData.char||c.isSprite)continue;c.traverse(o=>{if(!o.isMesh||o.material.transparent||o.geometry.type==='PlaneGeometry'||o.geometry===CABLE||o.geometry===ROPE)return;
+function buildCamCol(){camCol=[];for(const c of scene.children){if(c.userData.char||c.isSprite)continue;c.traverse(o=>{if(!o.isMesh||o.material.transparent||(o.geometry.type==='PlaneGeometry'&&!o.userData.camWall)||o.geometry===CABLE||o.geometry===ROPE)return;
  o.geometry.computeBoundingBox();const b=o.geometry.boundingBox;if(b.max.y-b.min.y<.07&&b.max.x-b.min.x>2)return;camCol.push(o)})}}
 function updateCam(dt){const f=(started?me.ch:demo).root.position;let ty=f.y+1.05,y=camY,p=camP,d=camD;
  if(editing){const av=!$('avS').hidden,F={head:[1.72,1.05,0,.04],top:[1.32,1.75,0,.1],back:[1.32,1.75,1,.1],glute:[.9,1.9,1,.08],bot:[.72,2.9,0,.12],full:[av?.75:1.15,av?3.8:2.3,0,.12]}[edFocus]||[1.15,2.3,0,.12];y=me.ch.ry+((edSide==='b')!==!!F[2]?PI:0);p=F[3];d=F[1];ty=f.y+F[0]}else if(!started){d=4.5;p=.25}
