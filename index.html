@@ -970,7 +970,7 @@ function liftUpdate(dt){const ch=me.ch,e=me.eq,d=diff();
   else if(held&&d<1.4&&tg>ch.c)ch.c+=Math.min(tg-ch.c,dt*1.7/Math.max(.5,d));else if(held&&d>=1.4)hint('너무 무거워요! 무게를 줄이세요',true,1.5)}
  ch.c=Math.max(0,ch.c-dt*(.1+.35*d));
  if(ch.c>.05){me.att+=dt;me.zeroT=0}else if((me.zeroT+=dt)>1.2){me.att=0;me.zeroT=0}
- if(ch.c>=1){ch.c=1;me.phase='down';me.att=0;me.needLow=me.needLowK=true;rep()}
+ if(ch.c>=.97){ch.c=1;me.phase='down';me.att=0;me.needLow=me.needLowK=true;rep()}
  else if((e.act==='bench'||e.act==='incline')&&(me.att>6||(d>1.15&&me.att>2.5)))pinStart()}
 function rep(){const e=me.eq,A=e.A,d=A.load?diff():.6;me.reps++;S.reps++;me.lastEx=performance.now();dexTick(e);
  const g=A.in==='tap2'?.0015:.006*(.5+Math.min(1.5,d));
