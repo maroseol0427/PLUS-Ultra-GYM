@@ -929,11 +929,12 @@ function pose(ch,act,t,c){
   for(const q of L2){const hit=q===hq?k:0;j['sh'+q].rotation.set(-1.45+hit*.25,0,-q*.2);j['el'+q].rotation.x=-1.25-hit*.3}j.spine.rotation.x=.08-k*.1;j.hips.position.y=.88+Math.sin(t*6)*.01;j.lg1.rotation.x=-.25;j['lg-1'].rotation.x=.18;j.kn1.rotation.x=j['kn-1'].rotation.x=.28;j.head.rotation.x=.08}
  else if(act==='refc'){const ph=(bxT%1+1)%1;j['sh-1'].rotation.set(-2.7+1.5*Math.min(1,ph*3),0,.12);j['el-1'].rotation.x=-.15;j.sh1.rotation.set(-.35,0,.15);j.el1.rotation.x=-.5;j.spine.rotation.x=.38;j.kn1.rotation.x=j['kn-1'].rotation.x=.35;j.hips.position.y=.86;j.head.rotation.x=.12}
  else if(act==='refr'){j['sh-1'].rotation.set(-2.95,0,-.15);j['el-1'].rotation.x=-.1;j.sh1.rotation.set(-.2,0,.12);j.head.rotation.x=-.12}
- else if(act==='bdps'||act==='bdpa'){const ph=bxT*DPW,lx=Math.sin(ph),ly=Math.sin(2*ph),A=act==='bdpa',L=(a,b,k)=>a+(b-a)*k;// 뎀프시롤: 몸을 낮춰 ∞자로 흔들고, 러시 중이면 가운데를 지날 때마다 그쪽 손 훅
-  j.hips.position.set(-lx*.2,.66+ly*.045,.06);j.hips.rotation.set(0,-.15+lx*.3,0);
-  j.lg1.rotation.set(-.55,0,.14);j.kn1.rotation.x=1.05+lx*.15;j['lg-1'].rotation.set(.08,0,-.14);j['kn-1'].rotation.x=.95-lx*.15;
-  j.spine.rotation.set(.5+ly*.08,lx*.45-(A?Math.cos(ph)*.5:0),lx*.5);j.head.rotation.set(-.08,-lx*.25,-lx*.35);
-  for(const q of L2){const e=A?Math.pow(Math.max(0,q*Math.cos(ph)),3):0;j['sh'+q].rotation.set(L(-1.2,-.3,e),0,L(-q*.22,q*1.35,e));j['el'+q].rotation.x=L(-2.35,-1.55,e);j['ha'+q].rotation.set(0,0,-q*.4*e)}}
+ else if(act==='bdps'||act==='bdpa'){const ph=bxT*DPW,lx=Math.sin(ph),ly=Math.sin(2*ph),A=act==='bdpa',L=(a,b,k)=>a+(b-a)*k,cs=Math.cos(ph),up=A?Math.pow(Math.abs(cs),1.5):0;
+  // 뎀프시롤: 몸을 낮춰 ∞자로 흔들고, 러시 중이면 가운데를 지날 때마다 일어서며 그쪽 손 훅을 얼굴 높이로 꽂는다 (거리 0.7에서 주먹이 볼 옆에 닿게 측정해 맞춘 값)
+  j.hips.position.set(-lx*.2,L(.66+ly*.045,.9,up),.06);j.hips.rotation.set(0,L(-.15,0,up)+lx*.3,0);
+  j.lg1.rotation.set(L(-.55,-.3,up),0,.14);j.kn1.rotation.x=L(1.05+lx*.15,.45,up);j['lg-1'].rotation.set(.08,0,-.14);j['kn-1'].rotation.x=L(.95-lx*.15,.4,up);
+  j.spine.rotation.set(L(.5+ly*.08,.05,up),lx*.45-(A?cs*.72:0),lx*.5*(1-up));j.head.rotation.set(L(-.08,.1,up),-lx*.25+(A?cs*.25:0),-lx*.35*(1-up));
+  for(const q of L2){const e=A?Math.pow(Math.max(0,q*cs),3):0;j['sh'+q].rotation.set(L(-1.2,-.6,e),0,L(-q*.22,q*1.7,e));j['el'+q].rotation.x=L(-2.35,-1.8,e);j['ha'+q].rotation.set(0,0,-q*.4*e)}}
  else if(BOXE.has(act)){const sm=x=>{x=clamp(x,0,1);return x*x*(3-2*x)},lerp=(a,b,k)=>a+(b-a)*k,eo=x=>{x=clamp(x,0,1);return 1-(1-x)*(1-x)*(1-x)},sdt=Math.min(.05,clock.dtv||.016);
   const bx=act==='box'?'':act[1],q=act[2]==='L'?1:-1,P=PK[bx];
   // 가드·이동 정도는 부드럽게 이어지게(뚝 끊기지 않게)
@@ -941,7 +942,7 @@ function pose(ch,act,t,c){
   const gd=ch.gdS,mv=ch.mvS,wv=ch.wv||{x:0,y:0},gro=clamp(((ch.gro||0)-60)/40,0,1),slip=wv.x,duck=Math.max(0,-wv.y),pull=Math.max(0,wv.y),cg=ch.chg||0;
   // 펀치 곡선: 맞는 순간(imp)에 다 뻗도록 빠르게 나가고, 잠깐 멈췄다가 부드럽게 회수. 훅·어퍼·파워는 짧게 감았다가 친다
   let k=0,w=0;if(P){const ph=clamp((bxT-(ch.pt||0))/P.dur,0,1),a=P.imp/P.dur;k=ph<a?eo(ph/a):ph<a+.08?1:1-sm((ph-a-.08)/(1-a-.08));w=bx==='j'?0:sm(ph/(a*.55))*(1-sm((ph-a*.55)/(a*.45)))}
-  const ht=clamp((bxT-(ch.hitT??-9))/.42,0,1),hr=ht<1?Math.sin(ht*PI)*(1-ht*.3):0,hk=ch.hitK||'j',hq=ch.hitQ||1;
+  const ht=clamp((bxT-(ch.hitT??-9))/.42,0,1),hr=ht<1?(ht<.12?ht/.12:Math.pow(1-(ht-.12)/.88,2)):0,hk=ch.hitK||'j',hq=ch.hitQ||1;
   const bob=Math.sin(t*6.5)*(1-mv)*(1-gd*.5),stp=Math.sin(t*.9)*mv,breath=Math.sin(t*1.6)*.012,kb=.38+duck*.62+gro*.1;
   // 하체: 오소독스(왼발 앞) · 무릎 굽혀 바운스 · 걸을 땐 앞발→뒷발 스텝 · 뒤로 빠지면 뒷다리로 체중
   j.hips.position.set(-slip*.13,.865+bob*.013+Math.abs(stp)*.02-duck*.24-(bx==='b'?.1*k:0)+(bx==='u'?-.09*w+.05*k:0)-(bx==='p'?.05*k+.03*w:0)-gro*.03,-pull*.09+(bx==='p'?.12*k:bx==='j'&&q<0?.05*k:0));
@@ -949,8 +950,8 @@ function pose(ch,act,t,c){
   j.lg1.rotation.set(-.36+stp*.3-(bx==='p'?.28*k:0),0,.09);j.kn1.rotation.x=kb+Math.max(0,stp)*.35+(bx==='j'&&q>0?.1*k:0)+(bx==='p'?.22*k:0);
   j['lg-1'].rotation.set(.22-stp*.3+pull*.14+(bx==='p'?.15*k:0),0,-.1);j['kn-1'].rotation.x=kb-.06+Math.max(0,-stp)*.35+(q<0&&P?.22*k:0);
   // 상체: 턱 당기고 어깨 앞 · 위빙 · 맞으면 얼굴은 뒤로/옆으로, 바디는 앞으로 접힘 · 그로기면 휘청
-  j.spine.rotation.set(.16+gd*.1+duck*.34-pull*.38-hr*(hk==='b'?-.45:.32)+(bx==='u'?.2*w-.24*k:0)+(bx==='b'?.32*k:0)+(bx==='p'?.12*k-.1*w:0)+breath,-.32-cg*.3,slip*.36+(hk==='h'?hq*hr*.25:0)+Math.sin(t*1.3)*.06*gro);
-  j.head.rotation.set(.14+gd*.2+duck*.08-pull*.1-hr*(hk==='u'?.8:hk==='b'?-.2:.5),.3,slip*.15+hq*hr*(hk==='h'?.5:.2)+Math.sin(t*2.1)*.09*gro-(P?q*.1*k:0));
+  j.spine.rotation.set(.16+gd*.1+duck*.34-pull*.38-hr*(hk==='b'?-.45:.32)+(bx==='u'?.2*w-.24*k:0)+(bx==='b'?.32*k:0)+(bx==='p'?.12*k-.1*w:0)+breath,-.32-cg*.3,slip*.36-(hk==='h'?hq*hr*.15:0)+Math.sin(t*1.3)*.06*gro);
+  j.head.rotation.set(.14+gd*.2+duck*.08-pull*.1-hr*(hk==='u'?.8:hk==='b'?-.2:hk==='h'?.15:.5),.3+(hk==='h'?hq*hr*.5:0),slip*.15-hq*hr*(hk==='h'?.3:.1)+Math.sin(t*2.1)*.09*gro-(P?q*.1*k:0));
   // 팔: 기본 가드(주먹 턱 높이), 가드 버튼이면 얼굴을 감싸듯 높게, 그로기면 가드가 내려감
   const GX=-.95-gd*.34+gro*.42,GE=-2.15-gd*.34+gro*.35;for(const s2 of L2){j['sh'+s2].rotation.set(GX,0,-s2*(.32+gd*.14));j['el'+s2].rotation.x=GE;j['ha'+s2].rotation.set(0,0,0)}
   if(cg>0&&!P){j['sh-1'].rotation.set(GX+.4*cg,0,.32+.25*cg);j['el-1'].rotation.x=GE-.2*cg}// 오른손을 뒤로 당겨 힘 모으기
@@ -1750,8 +1751,9 @@ function spark(x,y,z,c,n=9){for(let i=0;i<n;i++){const m=new THREE.Mesh(new THRE
  fxAdd(m,(o,t,dt)=>{if(t<=dt*1.01)o.position.set(x,y,z);o.position.addScaledVector(v,dt);return t<.22})}}
 function slowmo(){TS=.28;tsT=1.1}
 const SPRAYG=new THREE.BoxGeometry(.035,.035,.035);
-function spray(dc,ac,n=12){const x=dc.pos.x,z=dc.pos.z,y=stageY(x,z)+1.62,dx=x-ac.pos.x,dz=z-ac.pos.z,d=Math.hypot(dx,dz)||1;// 맞은 쪽 얼굴에서 땀이 펀치 방향으로 튄다
- for(let i=0;i<n;i++){const m=new THREE.Mesh(SPRAYG,new THREE.MeshBasicMaterial({color:pick(['#e8f6ff','#bfe6ff','#ffffff']),transparent:true,opacity:.9})),v=new V(dx/d*rnd(1.5,4)+rnd(-1.2,1.2),rnd(.5,2.6),dz/d*rnd(1.5,4)+rnd(-1.2,1.2));
+function spray(dc,ac,n=12,q=0){const fx0=dc.pos.x-ac.pos.x,fz0=dc.pos.z-ac.pos.z,d=Math.hypot(fx0,fz0)||1,fx=fx0/d,fz=fz0/d,lx=fz,lz=-fx;// f=때린 쪽 정면, l=때린 쪽 왼쪽, q=훅 손(1 왼손·-1 오른손·0 정면)
+ const x=dc.pos.x-fx*.12+lx*q*.1,z=dc.pos.z-fz*.12+lz*q*.1,y=stageY(dc.pos.x,dc.pos.z)+1.62;// 맞은 얼굴(훅이면 볼)에서 펀치가 지나가는 쪽으로 땀이 튄다
+ for(let i=0;i<n;i++){const m=new THREE.Mesh(SPRAYG,new THREE.MeshBasicMaterial({color:pick(['#e8f6ff','#bfe6ff','#ffffff']),transparent:true,opacity:.9})),a=q?rnd(.6,2):rnd(1.5,4),b=q?rnd(1.5,3.5):0,v=new V(fx*a-lx*q*b+rnd(-.8,.8),rnd(.5,2.4),fz*a-lz*q*b+rnd(-.8,.8));
   fxAdd(m,(o,t,dt)=>{if(t<=dt*1.01)o.position.set(x,y,z);o.position.addScaledVector(v,dt);v.y-=9*dt;o.material.opacity=.9*(1-t/.6);return t<.6})}}
 // 잔상: 캐릭터 상자들을 3벌 복사해 두고, 0.07초마다 가장 오래된 벌을 지금 자세로 옮겨 흐리게 지운다
 function ghostTick(ch,on,dt){let G=ch.ghosts;
@@ -1788,7 +1790,8 @@ function landHit(A,D,defCh,atkCh,key,pow){if(D.ko||defCh.downT>0)return null;
  if(!blocked&&D.pk&&!D.pk.hit){m*=1.4;tag=tag||'카운터!'}
  if(A&&!blocked&&bxT-A.dodgeT<.8){m*=1.25;tag=tag||'회피 후 카운터!';A.dodgeT=-9}
  if(A&&A.st<15)m*=.6;
- const dmg=PDMG[key]*m*pow/(D.chin||1),hx=defCh.pos.x,hz=defCh.pos.z,hy=stageY(hx,hz)+(body?1.15:1.6)-duck*.35;
+ const dmg=PDMG[key]*m*pow/(D.chin||1),hy=stageY(defCh.pos.x,defCh.pos.z)+(body?1.15:1.6)-duck*.35;let hx=defCh.pos.x,hz=defCh.pos.z;
+ if(atkCh){const ux=atkCh.pos.x-hx,uz=atkCh.pos.z-hz,ud=Math.hypot(ux,uz)||1,sq=kind==='h'?(key[1]==='L'?1:-1):0;hx+=(ux*.12-uz*sq*.1)/ud;hz+=(uz*.12+ux*sq*.1)/ud}
  D.hp=Math.max(0,D.hp-dmg);D.gr=Math.min(100,D.gr+dmg*PK[kind].gm*(blocked?.25:1.6));
  if(bout){if(A&&A===me.bf)A.sg=Math.min(100,(A.sg||0)+dmg*(blocked?.3:.9));if(D===me.bf)D.sg=Math.min(100,(D.sg||0)+dmg*.5)}
  if(body)D.st=Math.max(0,D.st-PSTD[key]*m);else if(blocked)D.st=Math.max(0,D.st-(kind==='p'?12:4));
@@ -1817,7 +1820,7 @@ function meImpact(p){const ch=me.ch,R=PK[p.kind].reach,f=[Math.sin(ch.ry),Math.c
  if(mitt)return mittHit(p);
  if(bout){const o=bout.opp,O=o.bf;if(bout.phase==='fight'&&!bout.kd&&(facing(o.ch)||(p.sp||p.dps)&&Math.hypot(o.ch.pos.x-ch.pos.x,o.ch.pos.z-ch.pos.z)<R+.35)){let pw=myPow();
    if(p.sp||p.dps){O.guard=false;O.wv.x=O.wv.y=O.wt.x=O.wt.y=0;O.pk=null;o.ai.react=null;o.ai.q=[];o.ai.atkT=Math.max(o.ai.atkT,.7);pw*=p.sp?SPC[p.sp].mul:1.5;if(p.sp==='gz')O.gr=Math.min(99,O.gr+55)}// 필살기·뎀프시롤은 가드·위빙으로 못 막는다
-   const res=landHit(me.bf,O,o.ch,ch,p.key,pw);if(res&&res!=='miss'){if(p.sp)spcFx(p.sp,o);else if(p.dps){spray(o.ch,ch,10);const dx=o.ch.pos.x-ch.pos.x,dz=o.ch.pos.z-ch.pos.z,d=Math.hypot(dx,dz)||1;o.ch.pos.x+=dx/d*.12;o.ch.pos.z+=dz/d*.12}}afterHit(res,'op')}return}
+   const res=landHit(me.bf,O,o.ch,ch,p.key,pw);if(res&&res!=='miss'){if(p.sp)spcFx(p.sp,o);else if(p.dps){spray(o.ch,ch,10,p.side==='L'?1:-1);const dx=o.ch.pos.x-ch.pos.x,dz=o.ch.pos.z-ch.pos.z,d=Math.hypot(dx,dz)||1;o.ch.pos.x+=dx/d*.12;o.ch.pos.z+=dz/d*.12}}afterHit(res,'op')}return}
  // 링 안 복서끼리 PvP: 맞는 사람 화면에서 회피·가드를 판정한다
  if(inRing(ch.pos.x,ch.pos.z))for(const[id,o]of peers){if(o.bx&&inRing(o.ch.pos.x,o.ch.pos.z)&&facing(o.ch)){me.bxa={to:id,i:++bxaI,k:p.key,pw:+(myPow()*(p.dps?1.5:p.sp?SPC[p.sp].mul:1)).toFixed(2)};spark(o.ch.pos.x,1.68,o.ch.pos.z);hitSfx(p.kind,false);me.bf.landed++;boxReward();return}}
  const px=ch.pos.x+f[0]*.6,pz=ch.pos.z+f[1]*.6;
@@ -1851,7 +1854,7 @@ function dpsAtk(v){const D=me.dps;if(!D||D.atk===v)return;D.atk=v;D.n=null;me.em
  if(v){banner('뎀프시롤!!','',1.1);if(bout)speak(bout.opp,pick(['뭐, 뭐야 이 움직임은?!','∞… 무한대?!','피할 수가 없어…!']))}}
 function dpsTick(dt){const D=me.dps;if(me.ko||mitt||bout&&(bout.phase==='end'||bout.kd&&bout.kd.who==='me'))return dpsOn(false);if(!D.atk)return;
  const n=Math.floor(bxT*DPW/PI);if(D.n===null)D.n=n;else if(n!==D.n){D.n=n;const side=n%2?'R':'L';SFX.whiff(.9);if(!(bout&&(bout.phase!=='fight'||bout.kd||bout.resume>0)))meImpact({kind:'h',side,key:'h'+side,dps:1})}
- if(bout&&bout.phase==='fight'&&!bout.kd){const o=bout.opp,dx=o.ch.pos.x-me.ch.pos.x,dz=o.ch.pos.z-me.ch.pos.z,d=Math.hypot(dx,dz);if(d>.95){const s=Math.min(d-.95,1.8*dt);me.ch.pos.x+=dx/d*s;me.ch.pos.z+=dz/d*s}}}
+ if(bout&&bout.phase==='fight'&&!bout.kd){const o=bout.opp,dx=o.ch.pos.x-me.ch.pos.x,dz=o.ch.pos.z-me.ch.pos.z,d=Math.hypot(dx,dz);if(d>.7){const s=Math.min(d-.7,1.8*dt);me.ch.pos.x+=dx/d*s;me.ch.pos.z+=dz/d*s}}}
 function boxSmash(){if(!isAdmin||!me.boxer||me.ko||mitt||me.dps)return;const F=me.bf,now=performance.now();if(now<(me.smCD||0)||bout&&(bout.phase!=='fight'||bout.kd||bout.resume>0))return;me.smCD=now+900;
  throwPunch(F,me.ch,'p','R');F.st=Math.min(100,F.st+PCOST.pR);F.pk.sm=1;me.emote={type:'bpR',t:1e9};me.ei++;SFX.whiff(1.6)}
 function smashHit(){const ch=me.ch,f=[Math.sin(ch.ry),Math.cos(ch.ry)],y=stageY(ch.pos.x,ch.pos.z)+1.45;
